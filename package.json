@@ -16,6 +16,7 @@
   "dependencies": {
     "chokidar": "^3.4.3",
     "date-utils": "^1.2.21",
+    "dotenv": "^8.2.0",
     "log4js": "^6.3.0"
   }
 }

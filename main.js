@@ -58,7 +58,8 @@ const evaluate_and_or_copy = () => {
     console.log(`phototime: ${photo.date}, barcodetime: ${barcode.date}`);
     if ( Math.abs(photo.date - barcode.date) < timelag && photo.name.length > 0 && barcode.name.length > 0) {
         let src = watch_dir + "/" + photo.name;
-        if (photo.name.split(".")[1]) barcode.name = barcode.name + "." + photo.name.split(".")[1];
+        let ext = photo.name.split(".");
+        if (photo.name.split(".")[1]) barcode.name = barcode.name + "." + ext[ext.length-1];
         let dest = rename_dir + "/" + barcode.name;
         rename_copy(src, dest);
         photo.name = '';
@@ -70,7 +71,7 @@ const evaluate_and_or_copy = () => {
 watcher.on('ready',function(){
 
     //準備完了
-    console.log("ready watching...");
+    console.log("フォルダー監視プログラム稼働中。");
 
     //ファイル受け取り
     watcher.on( 'add', function(file_name) {

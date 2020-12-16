@@ -25,7 +25,7 @@ log4js.configure({
     }
 });
 const eventLogger = log4js.getLogger('event');
-const sharp = require('sharp');
+const image_clipper = require('./imageClipper');
 
 //監視するフォルダーの相対パス
 const watch_dir = process.argv[4] || env.WATCH_DIR || "./watch";
@@ -64,75 +64,6 @@ const watcher = chokidar.watch(watch_dir+"/",{
     persistent:true
 });
 
-//リネームコピー
-const rename_copy = (src, dest) => {
-    fs.copyFile( src, dest, (err) => {
-        if (err) {
-            if (err.errno == -5) {
-                console.log(`ファイル名が異常です。`);
-                eventLogger.error(`ファイル名異常: ${src} , ${dest}`);
-            } else {
-                throw err;
-            }
-        } else {
-          console.log(`リネーム: ${src}　> ${dest}`);
-          eventLogger.info(`リネーム: ${src}　> ${dest}`);
-            if(!env.LEAVE_ORIGINAL_FILE) {
-                fs.unlink(path.join( src ), (err) => {
-                    if (err) throw err;
-                });
-            }
-        }
-    });
-};
-//トリミング処理
-const clip_image = (src, dest, ext, width, height, offset_x, offset_y, sign) => {
-    sharp(src).extract({ width: width, height: height, left: offset_x, top: offset_y }).resize(800).jpeg({quality:60}).toFile(`${dest}-${sign}.${ext}`)
-    .then(function(new_file_info) {
-        console.log(`リネーム（${sign}）: ${src}　> ${dest}-${sign}.${ext}`);
-        eventLogger.info(`リネーム（${sign}）: ${src}　> ${dest}-${sign}.${ext}`);
-        // fs.unlinkSync(src, (err) => {
-        //     if (err) throw err;
-        // });
-
-    })
-    .catch(function(err) {
-        console.log("An error occured");
-    });
-}
-
-//画像トリミング&リネーム
-const clip_rename = (src, dest, ext) => {
-    let middle_width, middle_height, m_offset_x, m_offset_y;
-    let low_width, low_height, l_offset_x, l_offset_y;
-    sharp(src).metadata()
-    .then(function(metadata) {
-        middle_width = Math.round(metadata.width*0.85);
-        middle_height = Math.round(metadata.height*0.85);
-        m_offset_x = Math.round( (metadata.width-middle_width)/2 );
-        m_offset_y = metadata.height - middle_height;
-        low_width = Math.round(metadata.width*0.7);
-        low_height = Math.round(metadata.height*0.7);
-        l_offset_x = Math.round( (metadata.width-low_width)/2 );
-        l_offset_y = metadata.height - low_height;
-    
-        clip_image(src, dest, ext, middle_width, middle_height, m_offset_x, m_offset_y, "M");
-        clip_image(src, dest, ext, low_width, low_height, l_offset_x, l_offset_y, "S");
-
-    });
-    //A （大）
-    sharp(src).resize(800).resize(800).jpeg({quality:60}).toFile(dest+"-L."+ext)
-    .then(function(new_file_info) {
-        console.log(`リネーム（L）: ${src}　> ${dest+"-L."+ext}`);
-        eventLogger.info(`リネーム（L）: ${src}　> ${dest+"-L."+ext}`);
-
-    })
-    .catch(function(err) {
-        console.log("An error occured");
-    });
-    
-};
-
 
 
 const evaluate_and_or_copy = () => {
@@ -141,7 +72,6 @@ const evaluate_and_or_copy = () => {
         let src = watch_dir + "/" + photo.name;
         let exts = photo.name.split(".");
         let ext ="";
-        //if (photo.name.split(".")[1]) barcode.name = barcode.name + "." + exts[exts.length-1];
         if(exts.length>1) ext=exts[exts.length-1];
         let sub_dir = '';
         lane_dir.forEach( str => {
@@ -150,7 +80,9 @@ const evaluate_and_or_copy = () => {
         if(sub_dir.length<1) sub_dir = "others";
         let dest = rename_dir + "/" + sub_dir + "/" + barcode.name;
         //rename_copy(src, dest);
-        clip_rename(src, dest, ext);
+        image_clipper.clip_rename(src, dest, ext, "A", eventLogger);
+        image_clipper.clip_rename(src, dest, ext, "B", eventLogger);
+        image_clipper.clip_rename(src, dest, ext, "C", eventLogger);
 
         photo.name = '';
         barcode.name = ''; 

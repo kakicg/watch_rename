@@ -9,9 +9,12 @@ const clip_image = (src, dest, ext, width, height, offset_x, offset_y, clip_size
     .then(function(new_file_info) {
         console.log(`リネーム（${clip_size}）: ${src}　> ${dest}-${clip_size}.${ext}`);
         eventLogger.info(`リネーム（${clip_size}）: ${src}　> ${dest}-${clip_size}.${ext}`);
-        // fs.unlinkSync(src, (err) => {
-        //     if (err) throw err;
-        // });
+        fs.unlinkSync(src, (err) => {
+            if (err) {
+                eventLogger.error(err);
+                throw err;
+            }
+        });
 
     })
     .catch(function(err) {
@@ -39,11 +42,10 @@ exports.clip_rename = (src, dest, ext, clip_size, eventLogger) => {
                 //L
                 width = metadata.width;
                 height = metadata.height;
-          }
-          offset_x = Math.round( (metadata.width-width)/2 );
-          offset_y = metadata.height - height;        
+        }
+        offset_x = Math.round( (metadata.width-width)/2 );
+        offset_y = metadata.height - height;        
 
-    
         clip_image(src, dest, ext, width, height, offset_x, offset_y, clip_size, eventLogger);
 
     });

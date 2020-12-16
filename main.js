@@ -16,42 +16,53 @@ require('dotenv').config();
 const env = process.env;
 const log4js = require('log4js');
 const { time } = require("console");
-log4js.configure({
-    appenders : {
-        event : {type : 'file', filename : 'event.log'}
-    },
-    categories : {
-        default : {appenders : ['event'], level : 'info'}
-    }
-});
+log4js.configure("log-config.json");
 const eventLogger = log4js.getLogger('event');
 const image_clipper = require('./imageClipper');
 
+const check_dir = (dir) => {
+    if (!fs.existsSync(dir) {
+        fs.mkdir(dir, { recursive: true }, (err) => {
+            if (err) {
+                eventLogger.error(err);
+                throw err;
+            }
+        });
+    }
+}
+
 //監視するフォルダーの相対パス
 const watch_dir = process.argv[4] || env.WATCH_DIR || "./watch";
-console.log(`写真転送フォルダー: ${watch_dir}`);
+check_dir(watch_dir);
 eventLogger.info(`写真転送フォルダー: ${watch_dir}`);
+
 //リネームファイルが入るフォルダーの相対パス
 const rename_dir = process.argv[3] || env.RENAMED_DIR || "./renamed";
-console.log(`リネームフォルダー: ${rename_dir}`);
+check_dir(rename_dir);
+
 eventLogger.info(`リネームフォルダー: ${rename_dir}`);
 
 const lane_dir = ["01","02","03","04","05","06","07","08","09","10","11","12"];
 lane_dir.forEach( num => {
     if (!fs.existsSync(rename_dir+"/"+num)) {
         fs.mkdir(rename_dir+"/"+num, { recursive: true }, (err) => {
-            if (err) throw err;
+            if (err) {
+                eventLogger.error(err);
+                throw err;
+            }
         });
     }
 });
 if (!fs.existsSync(rename_dir+"/others")) {
     fs.mkdir(rename_dir+"/others", { recursive: true }, (err) => {
-        if (err) throw err;
-    });
+        if (err) {
+            eventLogger.error(err);
+            throw err;
+        }
+});
 }
 const timelag = process.argv[2] || env.TIMELAG || 60*1000; //単位「ミリ秒」
 
-console.log(`許容タイムラグ: ${timelag}ミリ秒`);
 eventLogger.info(`許容タイムラグ: ${timelag}ミリ秒`);
 
 
@@ -67,7 +78,7 @@ const watcher = chokidar.watch(watch_dir+"/",{
 
 
 const evaluate_and_or_copy = () => {
-    console.log(`phototime: ${photo.date}, barcodetime: ${barcode.date}`);
+    eventLogger.info(`phototime: ${photo.date}, barcodetime: ${barcode.date}`);
     if ( Math.abs(photo.date - barcode.date) < timelag && photo.name.length > 0 && barcode.name.length > 0) {
         let src = watch_dir + "/" + photo.name;
         let exts = photo.name.split(".");
@@ -100,14 +111,12 @@ watcher.on('ready',function(){
     watcher.on( 'add', function(file_name) {
         photo.date = new Date();
         photo.name = path.basename(file_name);
-        console.log( `ファイル: ${photo.name}` );
         eventLogger.info(`ファイル: ${photo.name}`);
         evaluate_and_or_copy();
     });
 
     //バーコード入力
     readline.on('line', function(line){
-        console.log(`バーコード: ${line}`);
         eventLogger.info(`バーコード: ${line}`);
         if (line.length > 0) {
             barcode.date = new Date();

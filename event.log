@@ -313,3 +313,11 @@
 [2020-12-15T22:16:40.517] [INFO] event - リネーム（C）: ./watch/IMG_0439.JPG　> ./renamed/12/20201215-12357-C.JPG
 [2020-12-15T22:16:40.548] [INFO] event - リネーム（B）: ./watch/IMG_0439.JPG　> ./renamed/12/20201215-12357-B.JPG
 [2020-12-15T22:16:40.584] [INFO] event - リネーム（A）: ./watch/IMG_0439.JPG　> ./renamed/12/20201215-12357-A.JPG
+[2020-12-16T13:13:11.623] [INFO] event - 写真転送フォルダー: ./watch
+[2020-12-16T13:13:11.625] [INFO] event - リネームフォルダー: ./renamed
+[2020-12-16T13:13:11.626] [INFO] event - 許容タイムラグ: 60000ミリ秒
+[2020-12-16T13:13:32.435] [INFO] event - ファイル: IMG_0439.JPG
+[2020-12-16T13:13:36.438] [INFO] event - バーコード: 12987
+[2020-12-16T13:13:36.625] [INFO] event - リネーム（C）: ./watch/IMG_0439.JPG　> ./renamed/12/20201216-12987-C.JPG
+[2020-12-16T13:13:36.630] [INFO] event - リネーム（B）: ./watch/IMG_0439.JPG　> ./renamed/12/20201216-12987-B.JPG
+[2020-12-16T13:13:36.644] [INFO] event - リネーム（A）: ./watch/IMG_0439.JPG　> ./renamed/12/20201216-12987-A.JPG

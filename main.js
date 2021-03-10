@@ -21,7 +21,7 @@ const eventLogger = log4js.getLogger('event');
 const image_clipper = require('./imageClipper');
 
 const check_dir = (dir) => {
-    if (!fs.existsSync(dir) {
+    if (!fs.existsSync(dir)) {
         fs.mkdir(dir, { recursive: true }, (err) => {
             if (err) {
                 eventLogger.error(err);
@@ -44,25 +44,11 @@ eventLogger.info(`リネームフォルダー: ${rename_dir}`);
 
 const lane_dir = ["01","02","03","04","05","06","07","08","09","10","11","12"];
 lane_dir.forEach( num => {
-    if (!fs.existsSync(rename_dir+"/"+num)) {
-        fs.mkdir(rename_dir+"/"+num, { recursive: true }, (err) => {
-            if (err) {
-                eventLogger.error(err);
-                throw err;
-            }
-        });
-    }
+    check_dir(rename_dir+"/"+num);
 });
-if (!fs.existsSync(rename_dir+"/others")) {
-    fs.mkdir(rename_dir+"/others", { recursive: true }, (err) => {
-        if (err) {
-            eventLogger.error(err);
-            throw err;
-        }
-});
-}
-const timelag = process.argv[2] || env.TIMELAG || 60*1000; //単位「ミリ秒」
+check_dir(rename_dir+"/others");
 
+const timelag = process.argv[2] || env.TIMELAG || 60*1000; //単位「ミリ秒」
 eventLogger.info(`許容タイムラグ: ${timelag}ミリ秒`);
 
 

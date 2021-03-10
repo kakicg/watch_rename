@@ -4,9 +4,10 @@
         "type": "console"
       },
       "system": {
-        "type": "dateFile",
+        "type": "file",
         "filename": "../log/system.log",
-        "pattern": "-yyyy-MM-dd"
+        "backups": "7",
+        "maxLogSize": 1000000
       }
     },
     "categories": {

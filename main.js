@@ -68,12 +68,8 @@ const watcher = chokidar.watch(watch_dir+"/",{
 
 const evaluate_and_or_copy = () => {
     eventLogger.info(`timelag: ${Math.abs(photo.date - barcode.date)}, photo: ${photo.name.length}|${photo.date}, barcode: ${barcode.name.length}|${barcode.date}`);
-    console.log(Math.abs(photo.date - barcode.date) < timelag);
-    console.log(photo.name.length > 0 );
-    console.log( barcode.name.length > 0);
     
     if ( Math.abs(photo.date - barcode.date) < timelag && photo.name.length > 0 && barcode.name.length > 0) {
-        console.log('rename-started\n');
         let src = watch_dir + "/" + photo.name;
         let exts = photo.name.split(".");
         let ext ="";

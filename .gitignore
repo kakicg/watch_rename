@@ -1,6 +1,8 @@
 .DS_Store
+*/.DS_Store
 node_modules/
 renamed/
 package-lock.json
 test*
 *.log
+event.log

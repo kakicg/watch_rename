@@ -52,8 +52,11 @@ const timelag = process.argv[2] || env.TIMELAG || 60*1000; //単位「ミリ秒�
 eventLogger.info(`許容タイムラグ: ${timelag}ミリ秒`);
 
 
-let photo = {name:'', date: new Date(0)};
-let barcode = {name:'', date: new Date(0), lane: ''};
+let photo = {name:'', date: new Date(0), size:''};
+let barcode = {name:'', date: new Date(0), number: '', lane: ''};
+let photo_sizes = [env.XL||'A', env.L||'B', env.M||'C', env.S||'D', env.XS||'E'];
+eventLogger.info(`クリップサイズ等級: ${photo_sizes}`);
+
 
 //chokidarの初期化
 const watcher = chokidar.watch(watch_dir+"/",{
@@ -64,11 +67,17 @@ const watcher = chokidar.watch(watch_dir+"/",{
 
 
 const evaluate_and_or_copy = () => {
-    eventLogger.info(`phototime: ${photo.date}, barcodetime: ${barcode.date}`);
+    eventLogger.info(`timelag: ${Math.abs(photo.date - barcode.date)}, photo: ${photo.name.length}|${photo.date}, barcode: ${barcode.name.length}|${barcode.date}`);
+    console.log(Math.abs(photo.date - barcode.date) < timelag);
+    console.log(photo.name.length > 0 );
+    console.log( barcode.name.length > 0);
+    
     if ( Math.abs(photo.date - barcode.date) < timelag && photo.name.length > 0 && barcode.name.length > 0) {
+        console.log('rename-started\n');
         let src = watch_dir + "/" + photo.name;
         let exts = photo.name.split(".");
         let ext ="";
+        let clip_ratio = 0.0;
         if(exts.length>1) ext=exts[exts.length-1];
         let sub_dir = '';
         lane_dir.forEach( str => {
@@ -77,13 +86,16 @@ const evaluate_and_or_copy = () => {
         if(sub_dir.length<1) sub_dir = "others";
         let dest = rename_dir + "/" + sub_dir + "/" + barcode.name;
         //rename_copy(src, dest);
-        image_clipper.clip_rename(src, dest, ext, "A", eventLogger);
-        image_clipper.clip_rename(src, dest, ext, "B", eventLogger);
-        image_clipper.clip_rename(src, dest, ext, "C", eventLogger);
-
+        let p = photo_sizes.indexOf(photo.size);
+        if ( p < 0 ) { p = 0 }
+        clip_ratio = 0.85 ** p;
+        image_clipper.clip_rename(src, dest, ext, clip_ratio, eventLogger);
+ 
         photo.name = '';
+        photo.size = '';
         barcode.name = ''; 
-        barcode.lane = ''; 
+        barcode.lane = '';
+        barcode.number='';
     }
 };
 
@@ -106,8 +118,10 @@ watcher.on('ready',function(){
         eventLogger.info(`バーコード: ${line}`);
         if (line.length > 0) {
             barcode.date = new Date();
-            barcode.name = barcode.date.toFormat("YYYYMMDD") + "-" + line.slice(0,5);
-            barcode.lane = line.slice(0,2);
+            photo.size = line.slice(0,1);
+            barcode.number = line.slice(2,7);
+            barcode.name = barcode.date.toFormat("YYYYMMDD") + "-" + barcode.number;
+            barcode.lane = barcode.number.slice(0,2);
         }
         evaluate_and_or_copy();
     });

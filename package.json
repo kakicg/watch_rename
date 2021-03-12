@@ -5,7 +5,7 @@
   "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node main 60000 ./renamed ./watch"
+    "start": "node main"
   },
   "keywords": [
     "バーコード",
@@ -14,11 +14,15 @@
   "author": "kakicg",
   "license": "ISC",
   "dependencies": {
+    "@moneyforward/stream-util": "^0.1.4",
     "chokidar": "^3.4.3",
     "date-utils": "^1.2.21",
     "dotenv": "^8.2.0",
     "jimp": "^0.16.1",
     "log4js": "^6.3.0",
     "sharp": "^0.26.3"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.7"
   }
 }

@@ -5,9 +5,10 @@
       },
       "system": {
         "type": "file",
-        "filename": "../log/system.log",
+        "filename": "./log/system.log",
         "backups": "7",
-        "maxLogSize": 1000000
+        "maxLogSize": 5000000,
+        "compress": true
       }
     },
     "categories": {

@@ -4,7 +4,8 @@ const path = require("path");
 
 
 //トリミング処理
-const clip_image = (src, dest, ext, width, height, offset_x, offset_y, clip_ratio, eventLogger) => {
+const clip_image = (src, dest, ext, width, height, offset_x, offset_y, eventLogger) => {
+    eventLogger.info(`width:${width}, height:${height}, offset_x:${offset_x}, offset_y:${offset_y}`);
     sharp(src).extract({ width: width, height: height, left: offset_x, top: offset_y }).resize(800).jpeg({quality:60}).toFile(`${dest}.${ext}`)
     .then(function(new_file_info) {
         eventLogger.info(`リネーム（${src}　> ${dest}.${ext}`);
@@ -32,7 +33,7 @@ exports.clip_rename = (src, dest, ext, clip_ratio, eventLogger) => {
         offset_x = Math.round( (metadata.width-width)/2 );
         offset_y = metadata.height - height;        
 
-        clip_image(src, dest, ext, width, height, offset_x, offset_y, clip_ratio, eventLogger);
+        clip_image(src, dest, ext, width, height, offset_x, offset_y, eventLogger);
 
     });
 };

@@ -27,13 +27,9 @@ const check_dir = (dir) => {
                 throw err;
             }
         });
+        console.log(`created ${dir}.`)
     }
 }
-//サンプル採取フォルダーのパス
-check_dir("../watch_rename_samples/original");
-check_dir("../watch_rename_samples/resized");
-
-const image_clipper = require('./imageClipper');
 
 //監視するフォルダーの相対パス
 const watch_dir = process.argv[4] || env.WATCH_DIR || "./watch";
@@ -51,6 +47,7 @@ lane_dir.forEach( num => {
     check_dir(rename_dir+"/"+num);
 });
 check_dir(rename_dir+"/others");
+const image_clipper = require('./imageClipper');
 
 const timelag = process.argv[2] || env.TIMELAG || 60*1000; //単位「ミリ秒」
 eventLogger.info(`許容タイムラグ: ${timelag}ミリ秒`);

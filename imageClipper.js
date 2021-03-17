@@ -4,9 +4,26 @@ const path = require("path");
 require('dotenv').config({ path: '../watch_rename_sample_env' });
 const env = process.env;
 const sample_dir ='../watch_rename_samples';
+
+const check_dir = (dir) => {
+    if (!fs.existsSync(dir)) {
+        fs.mkdir(dir, { recursive: true }, (err) => {
+            if (err) {
+                eventLogger.error(err);
+                throw err;
+            }
+        });
+        console.log(`created ${dir}.`)
+    }
+}
+check_dir(sample_dir);
+check_dir(`${sample_dir}/original`);
+check_dir(`${sample_dir}/resized`);
+
 let samples_num = fs.readdirSync(`${sample_dir}/original`).length;
 const sample_start = new Date(env.SAMPLE_START);
-const sample_end = new Date(env.SAMPLE_END);
+const sample_end = new Date(env.SAMPLE_END);//サンプル採取フォルダーのパス
+
 if ( sample_start && sample_end) {
     console.log(`sample duration: ${sample_start} - ${sample_end}`)
 }

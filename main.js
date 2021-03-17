@@ -12,7 +12,7 @@ const readline = require('readline').createInterface({
     terminal: false
 });
 require('date-utils');
-require('dotenv').config();
+require('dotenv').config({ path: '../watch_rename_env' });
 const env = process.env;
 const log4js = require('log4js');
 const { time } = require("console");
@@ -30,6 +30,9 @@ const check_dir = (dir) => {
         });
     }
 }
+//サンプル採取フォルダーのパス
+check_dir("../watch_rename_samples/original");
+check_dir("../watch_rename_samples/resized");
 
 //監視するフォルダーの相対パス
 const watch_dir = process.argv[4] || env.WATCH_DIR || "./watch";
@@ -51,7 +54,6 @@ check_dir(rename_dir+"/others");
 const timelag = process.argv[2] || env.TIMELAG || 60*1000; //単位「ミリ秒」
 eventLogger.info(`許容タイムラグ: ${timelag}ミリ秒`);
 
-
 let photo = {name:'', date: new Date(0), size:''};
 let barcode = {name:'', date: new Date(0), number: '', lane: ''};
 const photo_sizes = [env.XL||'A', env.L||'B', env.M||'C', env.S||'D', env.XS||'E'];
@@ -59,14 +61,11 @@ const clip_ratios = [env.XL_R, env.L_R, env.M_R, env.S_R, env.XS_R];
 eventLogger.info(`クリップサイズ等級: ${photo_sizes}`);
 eventLogger.info(`クリップ率: ${clip_ratios}`);
 
-
 //chokidarの初期化
 const watcher = chokidar.watch(watch_dir+"/",{
     ignored:/[\/\\]\./,
     persistent:true
 });
-
-
 
 const evaluate_and_or_copy = () => {
     eventLogger.info(`timelag: ${Math.abs(photo.date - barcode.date)}, photo: ${photo.name.length}|${photo.date}, barcode: ${barcode.name.length}|${barcode.date}`);
@@ -76,6 +75,7 @@ const evaluate_and_or_copy = () => {
         let exts = photo.name.split(".");
         let ext ="";
         let clip_ratio = 0.0;
+
         if(exts.length>1) ext=exts[exts.length-1];
         let sub_dir = '';
         lane_dir.forEach( str => {
@@ -86,9 +86,10 @@ const evaluate_and_or_copy = () => {
         //rename_copy(src, dest);
         let p = photo_sizes.indexOf(photo.size);
         if ( p < 0 ) { p = 0 }
+ 
         //clip_ratio = 0.85 ** p;
         image_clipper.clip_rename(src, dest, ext, clip_ratios[p], eventLogger);
- 
+
         photo.name = '';
         photo.size = '';
         barcode.name = ''; 

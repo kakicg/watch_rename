@@ -18,7 +18,6 @@ const log4js = require('log4js');
 const { time } = require("console");
 log4js.configure("log-config.json");
 const eventLogger = log4js.getLogger('event');
-const image_clipper = require('./imageClipper');
 
 const check_dir = (dir) => {
     if (!fs.existsSync(dir)) {
@@ -33,6 +32,8 @@ const check_dir = (dir) => {
 //サンプル採取フォルダーのパス
 check_dir("../watch_rename_samples/original");
 check_dir("../watch_rename_samples/resized");
+
+const image_clipper = require('./imageClipper');
 
 //監視するフォルダーの相対パス
 const watch_dir = process.argv[4] || env.WATCH_DIR || "./watch";

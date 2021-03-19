@@ -43,7 +43,7 @@ const clip_image = (src, dest, ext, width, height, offset_x, offset_y, eventLogg
         console.log(`samples = ${samples_num}`);
         samples_num = samples_num + 1;
     }
-    sharp(src).extract({ width: width, height: height, left: offset_x, top: offset_y }).resize(image_width).jpeg({quality:image_quality}).toFile(`${dest}.${ext}`)
+    sharp(src).extract({ width: width, height: height, left: offset_x, top: offset_y }).resize(image_width).normalise().jpeg({quality:image_quality}).toFile(`${dest}.${ext}`)
     .then(function(new_file_info) {
         eventLogger.info(`リネーム（${src}　> ${dest}.${ext}`);
         fs.unlinkSync(src, (err) => {
@@ -52,7 +52,8 @@ const clip_image = (src, dest, ext, width, height, offset_x, offset_y, eventLogg
                 throw err;
             }
         });
-
+        let stat = fs.statSync(`${dest}.${ext}`);
+        console.log(`ファイルサイズ: ${Math.round(stat.size/1024)}K\n`);
     })
     .catch(function(err) {
         console.log(err);

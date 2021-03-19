@@ -5,6 +5,7 @@
 //require
 const fs = require("fs");
 const path = require("path");
+const sys = require("./systemController");
 const chokidar = require("chokidar");
 const readline = require('readline').createInterface({
     input: process.stdin,
@@ -19,34 +20,17 @@ const { time } = require("console");
 log4js.configure("log-config.json");
 const eventLogger = log4js.getLogger('event');
 
-const check_dir = (dir) => {
-    if (!fs.existsSync(dir)) {
-        fs.mkdir(dir, { recursive: true }, (err) => {
-            if (err) {
-                eventLogger.error(err);
-                throw err;
-            }
-        });
-        console.log(`created ${dir}.`)
-    }
-}
-
 //監視するフォルダーの相対パス
 const watch_dir = process.argv[4] || env.WATCH_DIR || "./watch";
-check_dir(watch_dir);
+sys.check_dir(watch_dir);
 eventLogger.info(`写真転送フォルダー: ${watch_dir}`);
 
 //リネームファイルが入るフォルダーの相対パス
 const rename_dir = process.argv[3] || env.RENAMED_DIR || "./renamed";
-check_dir(rename_dir);
+sys.check_dir(rename_dir);
 
 eventLogger.info(`リネームフォルダー: ${rename_dir}`);
 
-const lane_dir = ["01","02","03","04","05","06","07","08","09","10","11","12"];
-lane_dir.forEach( num => {
-    check_dir(rename_dir+"/"+num);
-});
-check_dir(rename_dir+"/others");
 const image_clipper = require('./imageClipper');
 
 const timelag = process.argv[2] || env.TIMELAG || 60*1000; //単位「ミリ秒」
@@ -72,16 +56,16 @@ const evaluate_and_or_copy = () => {
         let src = watch_dir + "/" + photo.name;
         let exts = photo.name.split(".");
         let ext ="";
-        let clip_ratio = 0.0;
 
         if(exts.length>1) ext=exts[exts.length-1];
-        let sub_dir = '';
-        lane_dir.forEach( str => {
-            if(barcode.lane===str) sub_dir = str;
-        });
-        if(sub_dir.length<1) sub_dir = "others";
-        let dest = rename_dir + "/" + sub_dir + "/" + barcode.name;
-        //rename_copy(src, dest);
+        subdir = barcode.date.toFormat("YYYYMMDD") + "/" + barcode.lane;
+        let dest = rename_dir
+        dest = dest + "/" + barcode.date.toFormat("YYYYMMDD");
+        sys.check_dir(dest);
+        dest = dest + "/" + barcode.lane;
+        sys.check_dir(dest);
+        dest = dest + "/" + barcode.name;
+
         let p = photo_sizes.indexOf(photo.size);
         if ( p < 0 ) { p = 0 }
  
@@ -117,7 +101,7 @@ watcher.on('ready',function(){
             barcode.date = new Date();
             photo.size = line.slice(0,1);
             barcode.number = line.slice(2,7);
-            barcode.name = barcode.date.toFormat("YYYYMMDD") + "-" + barcode.number;
+            barcode.name = barcode.date.toFormat("YYYYMMDD") + barcode.number;
             barcode.lane = barcode.number.slice(0,2);
         }
         evaluate_and_or_copy();

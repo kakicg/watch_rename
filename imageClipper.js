@@ -1,36 +1,27 @@
 const sharp = require('sharp');
 const fs = require("fs");
 const path = require("path");
-require('dotenv').config({ path: '../watch_rename_sample_env' });
+const sys = require("./systemController");
+
+require('dotenv').config({ path: '../watch_rename_env' });
 const env = process.env;
 const sample_dir ='../watch_rename_samples';
 
-const check_dir = (dir) => {
-    if (!fs.existsSync(dir)) {
-        fs.mkdir(dir, { recursive: true }, (err) => {
-            if (err) {
-                eventLogger.error(err);
-                throw err;
-            }
-        });
-        console.log(`created ${dir}.`)
-    }
-}
-check_dir(sample_dir);
-check_dir(`${sample_dir}/original`);
-check_dir(`${sample_dir}/resized`);
+sys.check_dir(sample_dir);
+sys.check_dir(`${sample_dir}/original`);
+sys.check_dir(`${sample_dir}/resized`);
 
+const image_width = env.IMAGE_WIDTH * 1;
+const image_quality = env.IMAGE_QUALITY * 1;
 let samples_num = fs.readdirSync(`${sample_dir}/original`).length;
 const sample_start = new Date(env.SAMPLE_START);
-const sample_end = new Date(env.SAMPLE_END);//サンプル採取フォルダーのパス
+const sample_end = new Date(env.SAMPLE_END);//サンプル採取の期間
 
-if ( sample_start && sample_end) {
-    console.log(`sample duration: ${sample_start} - ${sample_end}`)
-}
 //トリミング処理
 const clip_image = (src, dest, ext, width, height, offset_x, offset_y, eventLogger) => {
     eventLogger.info(`width:${width}, height:${height}, offset_x:${offset_x}, offset_y:${offset_y}`);
     let today = new Date();
+    console.log(`start:${sample_start}, end:${sample_end}, num: ${samples_num}`)
     if ( today > sample_start && today < sample_end && samples_num < 10001 ) {
         const sample_name = dest.split("/")[3];
         sharp(src).extract({ width: width, height: height, left: offset_x, top: offset_y })
@@ -52,7 +43,7 @@ const clip_image = (src, dest, ext, width, height, offset_x, offset_y, eventLogg
         console.log(`samples = ${samples_num}`);
         samples_num = samples_num + 1;
     }
-    sharp(src).extract({ width: width, height: height, left: offset_x, top: offset_y }).resize(800).jpeg({quality:60}).toFile(`${dest}.${ext}`)
+    sharp(src).extract({ width: width, height: height, left: offset_x, top: offset_y }).resize(image_width).jpeg({quality:image_quality}).toFile(`${dest}.${ext}`)
     .then(function(new_file_info) {
         eventLogger.info(`リネーム（${src}　> ${dest}.${ext}`);
         fs.unlinkSync(src, (err) => {

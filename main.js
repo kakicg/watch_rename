@@ -69,7 +69,7 @@ const evaluate_and_or_copy = () => {
         let p = photo_sizes.indexOf(photo.size);
         if ( p < 0 ) { p = 0 }
  
-        //clip_ratio = 0.85 ** p;
+        eventLogger.info(`**** ファイル名:${barcode.name}, クリップサイズ: ${photo.size}, クリップ率:${clip_ratios[p]}`);
         image_clipper.clip_rename(src, dest, ext, clip_ratios[p], eventLogger);
 
         photo.name = '';
@@ -90,8 +90,8 @@ watcher.on('ready',function(){
     watcher.on( 'add', function(file_name) {
         photo.date = new Date();
         photo.name = path.basename(file_name);
-        eventLogger.info(`ファイル: ${photo.name}`);
-        evaluate_and_or_copy();
+        eventLogger.info(`元ファイル: ${photo.name}`);
+        //evaluate_and_or_copy();
     });
 
     //バーコード入力

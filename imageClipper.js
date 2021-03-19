@@ -19,7 +19,6 @@ const sample_end = new Date(env.SAMPLE_END);//サンプル採取の期間
 
 //トリミング処理
 const clip_image = (src, dest, ext, width, height, offset_x, offset_y, eventLogger) => {
-    eventLogger.info(`width:${width}, height:${height}, offset_x:${offset_x}, offset_y:${offset_y}`);
     let today = new Date();
     console.log(`start:${sample_start}, end:${sample_end}, num: ${samples_num}`)
     if ( today > sample_start && today < sample_end && samples_num < 10001 ) {
@@ -70,6 +69,7 @@ exports.clip_rename = (src, dest, ext, clip_ratio, eventLogger) => {
 
         offset_x = Math.round( (metadata.width-width)/2 );
         offset_y = metadata.height - height;        
+        eventLogger.info(`width:${width}, height:${height}, offset_x:${offset_x}, offset_y:${offset_y}`);
 
         clip_image(src, dest, ext, width, height, offset_x, offset_y, eventLogger);
 

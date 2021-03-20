@@ -1,0 +1,29 @@
+#監視フォルダーへのパス
+#WATCH_DIR=//PHOTO-02/Users/Photo/EOS
+#WATCH_DIR=//WINDOWS7/windows7-users/kakicg/photo
+WATCH_DIR=../watch
+#リネームファイルのフォルダーへのパス
+RENAMED_DIR=../renamed
+#ファイル認識とバーコード認識の許容タイムラグ（単位：ミリ秒)
+TIMELAG=10000
+#オリジナルファイルを残すか否か
+LEAVE_ORIGINAL_FILE=false
+#最終画像サイズ (横幅のピクセル数)
+IMAGE_WIDTH=1200
+#最終画像画質 ( 0 - 100 )
+IMAGE_QUALITY=80
+#クリップサイズ　等級　XL > L > M > S > XS
+XL=X
+L=H
+M=M
+S=L
+XS=P
+#クリップサイズ　各等級のクリップ率 ( 0.0 - 1.0 )
+XL_R=1.0
+L_R=0.85
+M_R=0.72
+S_R=0.61
+XS_R=0.52
+#サンプル採取期間
+SAMPLE_START=2021-03-18
+SAMPLE_END=2021-04-11

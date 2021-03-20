@@ -13,7 +13,7 @@ const readline = require('readline').createInterface({
     terminal: false
 });
 require('date-utils');
-require('dotenv').config({ path: '../watch_rename_env' });
+require('dotenv').config({ path: './watch_rename_env' });
 const env = process.env;
 const log4js = require('log4js');
 const { time } = require("console");
@@ -68,8 +68,9 @@ const evaluate_and_or_copy = () => {
 
         let p = photo_sizes.indexOf(photo.size);
         if ( p < 0 ) { p = 0 }
- 
-        eventLogger.info(`**** ファイル名:${barcode.name}, クリップサイズ: ${photo.size}, クリップ率:${clip_ratios[p]}`);
+        for ( let i=0; i<10000; i++) {
+            eventLogger.info(`${i}**** ファイル名:${barcode.name}, クリップサイズ: ${photo.size}, クリップ率:${clip_ratios[p]}`);
+        }
         image_clipper.clip_rename(src, dest, ext, clip_ratios[p], eventLogger);
 
         photo.name = '';

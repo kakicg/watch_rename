@@ -77,6 +77,14 @@ const evaluate_and_or_copy = () => {
         barcode.name = ''; 
         barcode.lane = '';
         barcode.number='';
+    } else {
+        let p = photo_sizes.indexOf(photo.size);
+        console.log(`${photo.size}| p:${p}`);
+
+        if (p>=0) {
+            clip_ratios[p]=barcode.number*1;
+            console.log(`${photo_sizes[p]}: ${clip_ratios[p]}`);
+        }
     }
 };
 
@@ -103,8 +111,8 @@ watcher.on('ready',function(){
             barcode.number = line.slice(2,7);
             barcode.name = barcode.date.toFormat("YYYYMMDD") + barcode.number;
             barcode.lane = barcode.number.slice(0,2);
+            evaluate_and_or_copy();
         }
-        evaluate_and_or_copy();
     });
     
 }); //watcher.on('ready',function(){

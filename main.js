@@ -72,6 +72,7 @@ const evaluate_and_or_copy = () => {
         eventLogger.info(`**** ファイル名:${barcode.name}, クリップサイズ: ${photo.size}, クリップ率:${clip_ratios[p]}`);
         image_clipper.clip_rename(src, dest, ext, clip_ratios[p], eventLogger);
 
+        photo.name = '';
         photo.size = '';
         barcode.name = ''; 
         barcode.lane = '';

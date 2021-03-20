@@ -79,9 +79,8 @@ const evaluate_and_or_copy = () => {
         barcode.number='';
     } else {
         let p = photo_sizes.indexOf(photo.size);
-        console.log(`${photo.size}| p:${p}`);
 
-        if (p>=0) {
+        if (p>=0  ) {
             clip_ratios[p]=barcode.number*1;
             console.log(`${photo_sizes[p]}: ${clip_ratios[p]}`);
         }

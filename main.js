@@ -72,17 +72,15 @@ const evaluate_and_or_copy = () => {
         eventLogger.info(`**** ファイル名:${barcode.name}, クリップサイズ: ${photo.size}, クリップ率:${clip_ratios[p]}`);
         image_clipper.clip_rename(src, dest, ext, clip_ratios[p], eventLogger);
 
-        photo.name = '';
         photo.size = '';
         barcode.name = ''; 
         barcode.lane = '';
         barcode.number='';
     } else {
         let p = photo_sizes.indexOf(photo.size);
-
-        if (p>=0  ) {
+        if (p>=0 && barcode.number < 1.0 && barcode.number > 0.0) {
+            console.log(`${photo_sizes[p]}: ${clip_ratios[p]} --> ${barcode.number*1}`);
             clip_ratios[p]=barcode.number*1;
-            console.log(`${photo_sizes[p]}: ${clip_ratios[p]}`);
         }
     }
 };

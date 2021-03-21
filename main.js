@@ -28,8 +28,9 @@ eventLogger.info(`写真転送フォルダー: ${watch_dir}`);
 //リネームファイルが入るフォルダーの相対パス
 const rename_dir = process.argv[3] || env.RENAMED_DIR || "./renamed";
 sys.check_dir(rename_dir);
-
 eventLogger.info(`リネームフォルダー: ${rename_dir}`);
+let day_text = sys.read_day_text(`${rename_dir}/day.txt`);
+console.log(`day.txt[${day_text}]`);C
 
 const image_clipper = require('./imageClipper');
 

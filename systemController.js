@@ -16,3 +16,6 @@ exports.check_dir = (dir) => {
         console.log(`created ${dir}.`)
     }
 }
+exports.read_day_text = (dir) => {
+    return fs.readFileSync(dir, 'utf-8');
+}

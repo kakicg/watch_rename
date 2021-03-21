@@ -1,5 +1,6 @@
 const fs = require("fs");
 const path = require("path");
+const eventLogger = log4js.getLogger('event');
 
 exports.check_dir = (dir) => {
     if (!fs.existsSync(dir)) {

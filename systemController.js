@@ -1,5 +1,8 @@
 const fs = require("fs");
 const path = require("path");
+const log4js = require('log4js');
+const { time } = require("console");
+log4js.configure("log-config.json");
 const eventLogger = log4js.getLogger('event');
 
 exports.check_dir = (dir) => {

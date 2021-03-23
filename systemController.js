@@ -10,7 +10,7 @@ exports.check_dir = (dir) => {
         fs.mkdir(dir, { recursive: true }, (err) => {
             if (err) {
                 eventLogger.error(err);
-                throw err;
+                //throw err;
             }
         });
         console.log(`created ${dir}.`)

@@ -1,5 +1,5 @@
 // 第一引数 許容タイムラグ（単位：ミリ秒)
-// 第二引数 リネームしたファイルのフォルダーのパス
+// 第二引数 画像書込みしたファイルのフォルダーのパス
 // 第三引数 最初にファイルが書き込まれるフォルダーのパス
 
 //require
@@ -21,14 +21,22 @@ log4js.configure("log-config.json");
 const eventLogger = log4js.getLogger('event');
 
 //監視するフォルダーの相対パス
-const watch_dir = process.argv[4] || env.WATCH_DIR || "./watch";
-sys.check_dir(watch_dir);
-eventLogger.info(`写真転送フォルダー: ${watch_dir}`);
+let watch_dir = env.WATCH_DIR;
+if (!fs.existsSync(watch_dir)) {
+    eventLogger.error(`写真供給側のネットワーク(${watch_dir})に接続されていません。`);
+    watch_dir = "../watch";
+    sys.check_dir(watch_dir);
+}
+eventLogger.info(`写真供給フォルダー: ${watch_dir}`);
 
 //リネームファイルが入るフォルダーの相対パス
-const rename_dir = process.argv[3] || env.RENAMED_DIR || "./renamed";
-sys.check_dir(rename_dir);
-eventLogger.info(`リネームフォルダー: ${rename_dir}`);
+let rename_dir = env.RENAMED_DIR;
+if (!fs.existsSync(rename_dir)) {
+    eventLogger.error(`画像書込み側のネットワーク(${rename_dir})に接続されていません。`);
+    rename_dir = "../renamed";
+    sys.check_dir(rename_dir);
+}
+eventLogger.info(`画像書込みフォルダー: ${rename_dir}`);
 let day_text = sys.read_day_text(`${rename_dir}/day.txt`);
 console.log(`day.txt[${day_text}]`);
 

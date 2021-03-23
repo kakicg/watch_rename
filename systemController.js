@@ -17,5 +17,11 @@ exports.check_dir = (dir) => {
     }
 }
 exports.read_day_text = (dir) => {
-    return fs.readFileSync(dir, 'utf-8');
+    let data="";
+    try {
+        data = fs.readFileSync(dir, 'utf-8');
+    } catch {
+        data = null;
+    }
+    return data;
 }

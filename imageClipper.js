@@ -45,12 +45,12 @@ const clip_image = (src, dest, ext, width, height, offset_x, offset_y, eventLogg
     sharp(src).extract({ width: width, height: height, left: offset_x, top: offset_y }).resize(image_width).normalise().jpeg({quality:image_quality}).toFile(`${dest}.${ext}`)
     .then(function(new_file_info) {
         eventLogger.info(`リネーム（${src}　> ${dest}.${ext}`);
-        fs.unlinkSync(src, (err) => {
-            if (err) {
-                eventLogger.error(err);
-                throw err;
-            }
-        });
+        // fs.unlinkSync(src, (err) => {
+        //     if (err) {
+        //         eventLogger.error(err);
+        //         //throw err;
+        //     }
+        // });
         let stat = fs.statSync(`${dest}.${ext}`);
         console.log(`ファイルサイズ: ${Math.round(stat.size/1024)}K\n`);
     })

@@ -9,7 +9,15 @@
         "backups": "7",
         "maxLogSize": 5000000,
         "compress": true
+      },
+      "warn": {
+        "type": "file",
+        "filename": "../warn.log",
+        "backups": "3",
+        "maxLogSize": 5000000,
+        "compress": false
       }
+
     },
     "categories": {
       "default": {
@@ -18,6 +26,12 @@
           "system"
         ],
         "level": "all"
+      },
+      "warn": {
+        "appenders": [
+          "warn"
+        ],
+        "level": "error"
       }
     }
 }

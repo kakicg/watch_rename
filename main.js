@@ -174,17 +174,11 @@ watcher.on('ready',function(){
     readline.on('line', function(line){
         eventLogger.info(`バーコード: ${line}`);
         if (line.length > 0) {
+            if (barcode.name.length>0) {
+                eventLogger.warn(`フォトデータ[ ${barcode.name}(${barcode.date}) ]\nに対応する写真データが得られませんでした。シャッターセンサーが作動しなかった可能性があります。`);
+                uncompleted_barcodes.push(barcode);
+            }
             barcode.date = new Date();
-            // let second_ltr = line.slice(1,2);
-            // if (second_ltr === "a") {
-            //     barcode.size = line.slice(0,1);
-            //     barcode.number = line.slice(2,7);
-            // } else {
-            //     barcode.size = second_ltr;
-            //     barcode.number = line.slice(3,8);
-            // }
-            // barcode.name = day_text + barcode.number;
-            // barcode.lane = barcode.number.slice(0,2);
             let barcode_items = line.split("a");
             console.log(barcode_items)
             if (barcode_items[0].length>0) {

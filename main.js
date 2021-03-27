@@ -62,6 +62,7 @@ eventLogger.info(`クリップ率: ${clip_ratios}`);
 
 //写真供給フォルダーのクリア
 sys.clear_folder(watch_dir);
+
 //chokidarの初期化
 const watcher = chokidar.watch(watch_dir+"/",{
     ignored:/[\/\\]\./,
@@ -70,7 +71,6 @@ const watcher = chokidar.watch(watch_dir+"/",{
 const photo_reset = () => {
     photo.name = '';
     photo.date = new Date(0);
-    sys.clear_folder(watch_dir);
 };
 const barcode_reset = () => {
     barcode.name = ''; 
@@ -79,9 +79,11 @@ const barcode_reset = () => {
     barcode.size='';
     barcode.date = new Date(0);
 };
+let uncompleted_images = [];
+let uncompleted_barcodes = [];
 
 const evaluate_and_or_copy = () => {
-    eventLogger.info(`timelag: ${Math.abs(photo.date - barcode.date)}, photo: ${photo.name.length}|${photo.date}, barcode: ${barcode.name.length}|${barcode.date}`);
+    eventLogger.info(`timelag: ${Math.abs(photo.date - barcode.date)}, photo: ${photo.date}, barcode: ${barcode.date}`);
     let pdate_bdate = photo.date - barcode.date;
     if ( photo.name.length > 0 && barcode.name.length > 0) {
         if (Math.abs(pdate_bdate) < timelag) {
@@ -111,6 +113,7 @@ const evaluate_and_or_copy = () => {
               eventLogger.warn(`フォトデータ[ ${photo.name}(${photo.date}) ] に対応するバーコード情報が得られませんでした。\n
               余分な写真データが作られたか、バーコードリーダーが作動しなかった可能性があります。`);
               photo_reset();
+              sys.clear_folder(watch_dir);
             } else {
               eventLogger.warn(`バーコードデータ[ ${barcode.number}(${barcode.date}) ] に対応する写真データが得られませんでした。\n
               写真シャッターセンサーが作動しなかった可能性があります。`);
@@ -154,6 +157,7 @@ watcher.on('ready',function(){
                 if (photo.name.length>0) {
                     eventLogger.warn(`フォトデータ[ ${photo.name}(${photo.date}) ]\nに対応するバーコード情報が得られませんでした。\n余分な写真データが作られたか、バーコードリーダーが作動しなかった可能性があります。`);
                     sys.remove_file(watch_dir + "/" + photo.name);
+                    uncompleted_images.push(photo);
                 }
                 photo.date = new Date();
                 photo.name = path.basename(file_name);
@@ -182,7 +186,8 @@ watcher.on('ready',function(){
             // barcode.name = day_text + barcode.number;
             // barcode.lane = barcode.number.slice(0,2);
             let barcode_items = line.split("a");
-            if (barcode_items[0]>0) {
+            console.log(barcode_items)
+            if (barcode_items[0].length>0) {
                 barcode.size=barcode_items[0]; // barcode_items = [P L M H X]
                 barcode.size=barcode.size[barcode.size.length - 1];
             } else {
@@ -190,7 +195,7 @@ watcher.on('ready',function(){
                 eventLogger.error('高さセンサー情報がありません');
                 console.log("対応する写真はトリミングされません");
             }
-            barcode.number = barcode_items[1].slize(0,5);
+            barcode.number = barcode_items[1].slice(0,5);
             barcode.lane = barcode.number.slice(0,2);
             barcode.name = day_text + barcode.number;
             eventLogger.info(`サイズ：${barcode.size} バーコード: ${barcode.number}`);

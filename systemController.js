@@ -34,31 +34,22 @@ exports.clear_folder = (dir) => {
     console.log(files)
 
     files.forEach(file => {
-        fs.unlink( dir + "/" + file, (err => {
+        // fs.unlink( dir + "/" + file, (err => {
+        //     if (err) console.log(err);
+        //     else {
+        //       console.log(`${dir}内の${file}を削除しました。`);
+        //     }
+        // }));
+        this.remove_file(dir + "/" + file);
+    });
+}
+exports.remove_file = (file) => {
+    if ( fs.existsSync(file) ) {
+        fs.unlink( file, (err => {
             if (err) console.log(err);
             else {
               console.log(`${file}を削除しました。`);
             }
         }));
-    });
-}
-exports.remove_file = (file) => {
-    fs.unlink( file, (err => {
-        if (err) console.log(err);
-        else {
-          console.log(`${file}を削除しました。`);
-        }
-    }));
-    // try {
-    //     fs.unlinkSync(file, (err) => {
-    //         if (err) {
-    //             eventLogger.error(err);
-    //             throw err;
-    //         }
-    //     });
-    //     eventLogger.info(`${file}を削除しました。`)
-
-    // } catch {
-    //     eventLogger.error(`${file}は削除されませんでした。`)
-    // }
+    }
 }

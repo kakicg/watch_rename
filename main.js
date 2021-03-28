@@ -81,6 +81,7 @@ const barcode_reset = () => {
 };
 let uncompleted_images = [];
 let uncompleted_barcodes = [];
+let timer;
 
 const evaluate_and_or_copy = () => {
     eventLogger.info(`timelag: ${Math.abs(photo.date - barcode.date)}, photo: ${photo.date}, barcode: ${barcode.date}`);
@@ -157,7 +158,7 @@ watcher.on('ready',function(){
                 if (photo.name.length>0) {
                     eventLogger.warn(`フォトデータ[ ${photo.name}(${photo.date}) ]\nに対応するバーコード情報が得られませんでした。\n余分な写真データが作られたか、バーコードリーダーが作動しなかった可能性があります。`);
                     sys.remove_file(watch_dir + "/" + photo.name);
-                    uncompleted_images.push(photo);
+                    uncompleted_images.push({pname:photo.name, pdate:photo.date});
                 }
                 photo.date = new Date();
                 photo.name = path.basename(file_name);
@@ -172,28 +173,78 @@ watcher.on('ready',function(){
 
     //バーコード入力
     readline.on('line', function(line){
-        eventLogger.info(`バーコード: ${line}`);
-        if (line.length > 0) {
+        let barcode_items = line.split("a");
+        if (barcode_items.length > 1) {
+            eventLogger.info(`バーコード: ${line}`);
             if (barcode.name.length>0) {
                 eventLogger.warn(`フォトデータ[ ${barcode.name}(${barcode.date}) ]\nに対応する写真データが得られませんでした。シャッターセンサーが作動しなかった可能性があります。`);
-                uncompleted_barcodes.push(barcode);
+                if (barcode.name.length>0) {
+                    uncompleted_barcodes.push({bnumber:barcode.number,bdate:barcode.date});
+                }
             }
             barcode.date = new Date();
-            let barcode_items = line.split("a");
             console.log(barcode_items)
             if (barcode_items[0].length>0) {
                 barcode.size=barcode_items[0]; // barcode_items = [P L M H X]
                 barcode.size=barcode.size[barcode.size.length - 1];
             } else {
                 barcode.size = 'X';
-                eventLogger.error('高さセンサー情報がありません');
-                console.log("対応する写真はトリミングされません");
+                eventLogger.error('高さセンサー情報がありません\n対応する写真はトリミングされません');
             }
             barcode.number = barcode_items[1].slice(0,5);
             barcode.lane = barcode.number.slice(0,2);
             barcode.name = day_text + barcode.number;
-            eventLogger.info(`サイズ：${barcode.size} バーコード: ${barcode.number}`);
+            eventLogger.info(`サイズ：${barcode.size}\n バーコード: ${barcode.number}\n${barcode.date}`);
             evaluate_and_or_copy();
+        } else {
+            const cmd = barcode_items[0].toUpperCase();
+            if ( cmd === "" ) {
+                console.log("コマンドリスト\n");
+                console.log("    L: 未処理リスト\n");
+                console.log("    Q: 終了\n");
+                console.log("    C: 終了をキャンセル\n");
+
+            } else if ( cmd === "Q" || cmd == "E" ) {
+                if (photo.name.length>0) {
+                    uncompleted_images.push({pname:photo.name, pdate:photo.date})
+                }
+                if (barcode.name.length>0) {
+                    uncompleted_barcodes.push({bnumber:barcode.number, bdate:barcode.date})
+                }
+
+                console.log("処理されなかった写真")
+                eventLogger.info(uncompleted_images)
+                console.log("上記の写真に対応するバーコードが認識されませんでした。\n\n")
+                console.log("処理されなかったバーコードデータ")
+                eventLogger.info(uncompleted_barcodes)
+                console.log("上記のバーコードデータに対応する写真が認識されませんでした。\n")
+                console.log("10秒後に終了します");
+                timer = setTimeout( () => {
+                    process.exit();
+                }, 10000);
+
+            } else if ( cmd === "C") {
+                if (timer) {
+                    new Promise(()=> {
+                        console.log("終了をキャンセルします");
+                        clearTimeout(timer); 
+                        timer = null;
+                    })
+                }
+            } else if ( cmd === "L") {
+                if (photo.name.length>0) {
+                    uncompleted_images.push({pname:photo.name, pdate:photo.date})
+                }
+                if (barcode.name.length>0) {
+                    uncompleted_barcodes.push({bnumber:barcode.number, bdate:barcode.date})
+                }
+                console.log("処理されなかった写真\n")
+                console.log(uncompleted_images)
+                console.log("\n上記の写真に対応するバーコードが認識されませんでした。\n\n")
+                console.log("処理されなかったバーコードデータ\n")
+                console.log(uncompleted_barcodes)
+                console.log("\n上記のバーコードデータに対応する写真が認識されませんでした。\n")
+            }
         }
     });
     

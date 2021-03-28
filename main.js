@@ -57,6 +57,7 @@ let photo = {name:'', date: new Date(0), size:''};
 let barcode = {name:'', date: new Date(0), number: '', lane: '',size:''};
 const photo_sizes = [env.XL||'A', env.L||'B', env.M||'C', env.S||'D', env.XS||'E'];
 const clip_ratios = [env.XL_R, env.L_R, env.M_R, env.S_R, env.XS_R];
+const cutoff=env.IMAGE_CUTOFF*1;
 eventLogger.info(`クリップサイズ等級: ${photo_sizes}`);
 eventLogger.info(`クリップ率: ${clip_ratios}`);
 
@@ -111,14 +112,20 @@ const evaluate_and_or_copy = () => {
             barcode_reset();
         } else {
             if (pdate_bdate <0) {
-              eventLogger.warn(`フォトデータ[ ${photo.name}(${photo.date}) ] に対応するバーコード情報が得られませんでした。\n
-              余分な写真データが作られたか、バーコードリーダーが作動しなかった可能性があります。`);
-              photo_reset();
-              sys.clear_folder(watch_dir);
+                if (photo.name.length>0) {
+                    eventLogger.warn(`フォトデータ[ ${photo.name}(${photo.date}) ] に対応するバーコード情報が得られませんでした。\n余分な写真データが作られたか、バーコードリーダーが作動しなかった可能性があります。`);
+                        uncompleted_images.push({pname:photo.name, pdate:photo.date})
+                }
+
+                photo_reset();
+                sys.clear_folder(watch_dir);
             } else {
-              eventLogger.warn(`バーコードデータ[ ${barcode.number}(${barcode.date}) ] に対応する写真データが得られませんでした。\n
-              写真シャッターセンサーが作動しなかった可能性があります。`);
-              barcode_reset();
+                if (barcode.number.length>0) {
+                    eventLogger.warn(`バーコードデータ[ ${barcode.number}(${barcode.date}) ] に対応する写真データが得られませんでした。\n写真シャッターセンサーが作動しなかった可能性があります。`);
+                        uncompleted_barcodes.push({bnumber:barcode.number, bdate:barcode.date})
+                }
+
+                barcode_reset();
             }
         }
         
@@ -234,9 +241,12 @@ watcher.on('ready',function(){
             } else if ( cmd === "L") {
                 if (photo.name.length>0) {
                     uncompleted_images.push({pname:photo.name, pdate:photo.date})
+                    photo_reset();
+                    sys.clear_folder(watch_dir);
                 }
                 if (barcode.name.length>0) {
                     uncompleted_barcodes.push({bnumber:barcode.number, bdate:barcode.date})
+                    barcode_reset()
                 }
                 console.log("処理されなかった写真\n")
                 console.log(uncompleted_images)

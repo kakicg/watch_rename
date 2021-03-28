@@ -5,7 +5,6 @@ require('dotenv').config({ path: '../watch_rename_env' });
 const env = process.env;
 //テストモード
 const test_mode = (process.argv[2] === "test");
-console.log(test_mode);
 //require
 const fs = require("fs");
 const path = require("path");
@@ -43,8 +42,13 @@ if (!fs.existsSync(rename_dir) || test_mode) {
     sys.check_dir(rename_dir);
 }
 eventLogger.info(`画像書込みフォルダー: ${rename_dir}`);
-let day_text = sys.read_day_text(`${rename_dir}/day.txt`);
-day_text = day_text.slice(0,8);
+
+let day_text = "20310101";
+if (fs.existsSync(`${rename_dir}/day.txt`)) {
+    day_text = sys.read_day_text(`${rename_dir}/day.txt`)
+    day_text = day_text.slice(0,8);
+}
+
 console.log(`day.txt[${day_text}]`);
 
 const image_clipper = require('./imageClipper');
@@ -85,9 +89,9 @@ let uncompleted_barcodes = [];
 let timer;
 
 const evaluate_and_or_copy = () => {
-    eventLogger.info(`timelag: ${Math.abs(photo.date - barcode.date)}, photo: ${photo.date}, barcode: ${barcode.date}`);
     let pdate_bdate = photo.date - barcode.date;
     if ( photo.name.length > 0 && barcode.name.length > 0) {
+        eventLogger.info(`timelag: ${Math.abs(photo.date - barcode.date)}, photo: ${photo.date}, barcode: ${barcode.date}`);
         if (Math.abs(pdate_bdate) < timelag) {
             let src = watch_dir + "/" + photo.name;
             let exts = photo.name.split(".");
@@ -148,32 +152,31 @@ watcher.on('ready',function(){
 
     }
 
-    // //ファイル受け取り
-    //    watcher.on( 'add', function(file_name) {
-    //     photo.date = new Date();
-    //     photo.name = path.basename(file_name);
-    //     eventLogger.info(`元ファイル: ${photo.name}`);
-    //     //evaluate_and_or_copy();
-    // });
     //ファイル受け取り
     watcher.on( 'add', function(file_name) {
-
-        let exts = path.basename(file_name).split(".");
+        const new_name = path.basename(file_name);
+        let exts = new_name.split(".");
+        eventLogger.info(`追加されたファイル: ${new_name}`);            
         if(exts.length>1) {
             ext=exts[exts.length-1];
             if (ext.toUpperCase() ==="JPG" || ext.toUpperCase() === "JPEG") {
                 if (photo.name.length>0) {
-                    eventLogger.warn(`フォトデータ[ ${photo.name}(${photo.date}) ]\nに対応するバーコード情報が得られませんでした。\n余分な写真データが作られたか、バーコードリーダーが作動しなかった可能性があります。`);
-                    sys.remove_file(watch_dir + "/" + photo.name);
-                    uncompleted_images.push({pname:photo.name, pdate:photo.date});
+                    if( photo.name < new_name ) {
+                        eventLogger.warn(`フォトデータ[ ${photo.name}(${photo.date}) ]\nに対応するバーコード情報が得られませんでした。\n余分な写真データが作られたか、バーコードリーダーが作動しなかった可能性があります。`);
+                        sys.remove_file(watch_dir + "/" + photo.name);
+                        uncompleted_images.push({pname:photo.name, pdate:photo.date});
+                        photo.date = new Date();
+                        photo.name = new_name;
+                        eventLogger.info(`フォトデータ: ${photo.name} ${photo.date}`);            
+                    } else {
+                        sys.remove_file( watch_dir + "/" + new_name );
+                    }
+                } else {
+                    photo.date = new Date();
+                    photo.name = new_name;
+                    eventLogger.info(`フォトデータ: ${photo.name} ${photo.date}`);            
                 }
-                photo.date = new Date();
-                photo.name = path.basename(file_name);
-
-                eventLogger.info(`元ファイル: ${photo.name}|${photo.date}`);    
-            } else {
-                photo.name = "";
-            }
+            } 
         }
         evaluate_and_or_copy();
    });
@@ -184,7 +187,7 @@ watcher.on('ready',function(){
         if (barcode_items.length > 1) {
             eventLogger.info(`バーコード: ${line}`);
             if (barcode.name.length>0) {
-                eventLogger.warn(`フォトデータ[ ${barcode.name}(${barcode.date}) ]\nに対応する写真データが得られませんでした。シャッターセンサーが作動しなかった可能性があります。`);
+                eventLogger.warn(`フォトデータ[ ${barcode.name}(${barcode.date}) ]\nに対応するフォトデータが得られませんでした。シャッターセンサーが作動しなかった可能性があります。`);
                 if (barcode.name.length>0) {
                     uncompleted_barcodes.push({bnumber:barcode.number,bdate:barcode.date});
                 }
@@ -219,12 +222,10 @@ watcher.on('ready',function(){
                     uncompleted_barcodes.push({bnumber:barcode.number, bdate:barcode.date})
                 }
 
-                console.log("処理されなかった写真")
+                console.log("処理されなかったフォトデータ")
                 eventLogger.info(uncompleted_images)
-                console.log("上記の写真に対応するバーコードが認識されませんでした。\n\n")
                 console.log("処理されなかったバーコードデータ")
                 eventLogger.info(uncompleted_barcodes)
-                console.log("上記のバーコードデータに対応する写真が認識されませんでした。\n")
                 console.log("10秒後に終了します");
                 timer = setTimeout( () => {
                     process.exit();

@@ -20,10 +20,10 @@ exports.check_dir = (dir) => {
         eventLogger.error(`フォルダ[ ${dir} ] は作れませんでした。`)
     }
 }
-exports.read_day_text = (dir) => {
+exports.read_day_text = (file) => {
     let data="";
     try {
-        data = fs.readFileSync(dir, 'utf-8');
+        data = fs.readFileSync(file, 'utf-8');
     } catch {
         data = null;
     }

@@ -13,13 +13,39 @@ sys.check_dir(`${sample_dir}/resized`);
 
 const image_width = env.IMAGE_WIDTH * 1;
 const image_quality = env.IMAGE_QUALITY * 1;
+const cutoff=env.IMAGE_CUTOFF*1;
+
 let samples_num = fs.readdirSync(`${sample_dir}/original`).length;
 const sample_start = new Date(env.SAMPLE_START);
 const sample_end = new Date(env.SAMPLE_END);//サンプル採取の期間
 
+//カットオフ処理
+const cutoff_image = (src, dest, ext, width, height, offset_x, offset_y, eventLogger) => {
+    sharp(src).extract({ width: width, height: height, left: offset_x, top: offset_y })
+    .resize(image_width, image_width/4*3,{fit: 'contain', background: { r: 255, g: 255, b: 255 }})
+    .jpeg({quality:100}).toFile(`${dest}.${ext}`)
+    .then(function(new_file_info) {
+        eventLogger.info(`カットオフ（${src}　> ${dest}.${ext}`);
+        sys.remove_file(src);
+    })
+    .catch(function(err) {
+        console.log(err);
+    });
+}
+
 //トリミング処理
 const clip_image = (src, dest, ext, width, height, offset_x, offset_y, eventLogger) => {
     let today = new Date();
+    const original_width = width + offset_x * 2;
+    const original_height = height + offset_y;
+    const cutoff_width = original_height;
+    const cutoff_height = original_height;
+    const cutoff_offset_x = (original_width - original_height)/2;
+    const cutoff_offset_y = 0;
+
+    console.log(`cutoff_width:${cutoff_width}, cutoff_height:${cutoff_height}, cutoff_offset_x:${cutoff_offset_x}`)
+    console.log(`width:${width}, height:${height}`)
+    
     console.log(`start:${sample_start}, end:${sample_end}, num: ${samples_num}`)
     if ( today > sample_start && today < sample_end && samples_num < 10001 ) {
         const sample_name = dest.split("/")[3];
@@ -39,10 +65,13 @@ const clip_image = (src, dest, ext, width, height, offset_x, offset_y, eventLogg
         .catch(function(err) {
             console.log(err);
         });
-        console.log(`samples = ${samples_num}`);
         samples_num = samples_num + 1;
     }
-    sharp(src).extract({ width: width, height: height, left: offset_x, top: offset_y }).resize(image_width).normalise().jpeg({quality:image_quality}).toFile(`${dest}.${ext}`)
+    sharp(src)
+    // .extract({ width: cutoff_width, height: cutoff_height, left: cutoff_offset_x , top: cutoff_offset_y })
+    // .resize(original_width,original_height,{fit: 'contain', background: { r: 255, g: 255, b: 255 }})
+    .extract({ width: width, height: height, left: offset_x, top: offset_y }).resize(image_width)
+    .normalise().jpeg({quality:image_quality}).toFile(`${dest}.${ext}`)
     .then(function(new_file_info) {
         eventLogger.info(`リネーム（${src}　> ${dest}.${ext}`);
         
@@ -76,3 +105,19 @@ exports.clip_rename = (src, dest, ext, clip_ratio, eventLogger) => {
 
     });
 };
+
+//画像CUTOFF処理
+exports.cutoff_move = (src, dest, ext, eventLogger) => {
+    let width, height, offset_x, offset_y;
+    sharp(src).metadata()
+    .then(function(metadata) {
+        width = Math.round(metadata.height*cutoff);
+        height = Math.round(metadata.height);
+
+        offset_x = Math.round( (metadata.width-width)/2 );
+        offset_y = 0;        
+
+        cutoff_image(src, dest, ext, width, height, offset_x, offset_y, eventLogger);
+
+    });
+}

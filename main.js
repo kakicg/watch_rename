@@ -21,10 +21,9 @@ const log4js = require('log4js');
 const { time } = require("console");
 log4js.configure("log-config.json");
 const eventLogger = log4js.getLogger('event');
-const warnLogger = log4js.getLogger('warn');
 
 //監視するフォルダーの相対パス
-let watch_dir = env.WATCH_DIR;
+let watch_dir = env.WATCH_DIR || 'P:/';
 if (!fs.existsSync(watch_dir) ) {
     eventLogger.error(`写真供給側のネットワーク(${watch_dir})に接続されていません。`);
     watch_dir = "../watch";
@@ -37,7 +36,7 @@ sys.check_dir(tmp_image_dir);
 eventLogger.info(`写真供給フォルダー: ${watch_dir}`);
 
 //リネームファイルが入るフォルダーの相対パス
-let rename_dir = env.RENAMED_DIR;
+let rename_dir = env.RENAMED_DIR || '//192.168.128.11/g_drive';
 if (!fs.existsSync(rename_dir) || test_mode) {
     if(!fs.existsSync(rename_dir)) {
         eventLogger.error(`画像書込み側のネットワーク(${rename_dir})に接続されていません。`);
@@ -57,14 +56,14 @@ console.log(`day.txt[${day_text}]`);
 
 const image_clipper = require('./imageClipper');
 
-let timelag = process.argv[3] || env.TIMELAG; //単位「ミリ秒」
+let timelag = process.argv[3] || env.TIMELAG || 2000; //単位「ミリ秒」
 
 eventLogger.info(`許容タイムラグ: ${timelag}ミリ秒`);
 
 let photo = {name:'', date: new Date(0), size:''};
 let barcode = {name:'', date: new Date(0), number: '', lane: '',size:''};
-const photo_sizes = [env.XL||'A', env.L||'B', env.M||'C', env.S||'D', env.XS||'E'];
-const clip_ratios = [env.XL_R, env.L_R, env.M_R, env.S_R, env.XS_R];
+const photo_sizes = [env.XL||'X', env.L||'H', env.M||'M', env.S||'L', env.XS||'P'];
+const clip_ratios = [env.XL_R || 0.7, env.L_R || 0.6, env.M_R || 0.45, env.S_R || 0.33, env.XS_R || 0.28];
 eventLogger.info(`クリップサイズ等級: ${photo_sizes}`);
 eventLogger.info(`クリップ率: ${clip_ratios}`);
 
@@ -131,17 +130,9 @@ const evaluate_and_or_copy = () => {
                     eventLogger.warn(`バーコードデータ[ ${barcode.number}(${barcode.date}) ] に対応する写真データが得られませんでした。\n写真シャッターセンサーが作動しなかった可能性があります。`);
                         uncompleted_barcodes.push({bnumber:barcode.number, bdate:barcode.date})
                 }
-
                 barcode_reset();
             }
         }
-        
-    } else {
-        //let p = photo_sizes.indexOf(barcode.size);
-        // if (p>=0 && barcode.number < 1.0 && barcode.number > 0.0) {
-        //     console.log(`${photo_sizes[p]}: ${clip_ratios[p]} --> ${barcode.number*1}`);
-        //     clip_ratios[p]=barcode.number*1;
-        // }
     }
 };
 
@@ -152,20 +143,13 @@ watcher.on('ready',function(){
     console.log("フォルダー監視プログラム稼働中。");
     if (test_mode) {
         eventLogger.trace("[ テストモード ]");
-
     }
 
     //ファイル受け取り
     watcher.on( 'add', function(file_name) {
-<<<<<<< HEAD
         const new_name = path.basename(file_name);
         let exts = new_name.split(".");
         eventLogger.info(`追加されたファイル: ${new_name}`);            
-=======
-
-        let exts = path.basename(file_name).split(".");
-        console.log(`file_name${file_name}`)
->>>>>>> 画像CUTOFF処理
         if(exts.length>1) {
             ext=exts[exts.length-1];
             if (ext.toUpperCase() ==="JPG" || ext.toUpperCase() === "JPEG") {
@@ -185,17 +169,7 @@ watcher.on('ready',function(){
                     photo.name = new_name;
                     eventLogger.info(`フォトデータ: ${photo.name} ${photo.date}`);            
                 }
-<<<<<<< HEAD
             } 
-=======
-                photo.date = new Date();
-                photo.name = path.basename(file_name);
-
-                eventLogger.info(`元ファイル: ${photo.name}|${photo.date}`);
-            } else {
-                photo.name = "";
-            }
->>>>>>> 画像CUTOFF処理
         }
         evaluate_and_or_copy();
    });

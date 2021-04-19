@@ -30,6 +30,10 @@ if (!fs.existsSync(watch_dir) ) {
     watch_dir = "../watch";
     sys.check_dir(watch_dir);
 }
+//Temp画像フォルダー
+const tmp_image_dir = "../tmp_image"
+sys.check_dir(tmp_image_dir);
+
 eventLogger.info(`写真供給フォルダー: ${watch_dir}`);
 
 //リネームファイルが入るフォルダーの相対パス
@@ -61,7 +65,6 @@ let photo = {name:'', date: new Date(0), size:''};
 let barcode = {name:'', date: new Date(0), number: '', lane: '',size:''};
 const photo_sizes = [env.XL||'A', env.L||'B', env.M||'C', env.S||'D', env.XS||'E'];
 const clip_ratios = [env.XL_R, env.L_R, env.M_R, env.S_R, env.XS_R];
-const cutoff=env.IMAGE_CUTOFF*1;
 eventLogger.info(`クリップサイズ等級: ${photo_sizes}`);
 eventLogger.info(`クリップ率: ${clip_ratios}`);
 
@@ -109,9 +112,9 @@ const evaluate_and_or_copy = () => {
             let p = photo_sizes.indexOf(barcode.size);
             if ( p < 0 ) { p = 0 }
      
+            image_clipper.clip_rename(src, dest, ext, clip_ratios[p], eventLogger)
             eventLogger.info(`**** ファイル名:${barcode.name}, クリップサイズ: ${barcode.size}, クリップ率:${clip_ratios[p]}`);
-            image_clipper.clip_rename(src, dest, ext, clip_ratios[p], eventLogger);
-    
+
             photo_reset();
             barcode_reset();
         } else {
@@ -154,9 +157,15 @@ watcher.on('ready',function(){
 
     //ファイル受け取り
     watcher.on( 'add', function(file_name) {
+<<<<<<< HEAD
         const new_name = path.basename(file_name);
         let exts = new_name.split(".");
         eventLogger.info(`追加されたファイル: ${new_name}`);            
+=======
+
+        let exts = path.basename(file_name).split(".");
+        console.log(`file_name${file_name}`)
+>>>>>>> 画像CUTOFF処理
         if(exts.length>1) {
             ext=exts[exts.length-1];
             if (ext.toUpperCase() ==="JPG" || ext.toUpperCase() === "JPEG") {
@@ -176,7 +185,17 @@ watcher.on('ready',function(){
                     photo.name = new_name;
                     eventLogger.info(`フォトデータ: ${photo.name} ${photo.date}`);            
                 }
+<<<<<<< HEAD
             } 
+=======
+                photo.date = new Date();
+                photo.name = path.basename(file_name);
+
+                eventLogger.info(`元ファイル: ${photo.name}|${photo.date}`);
+            } else {
+                photo.name = "";
+            }
+>>>>>>> 画像CUTOFF処理
         }
         evaluate_and_or_copy();
    });

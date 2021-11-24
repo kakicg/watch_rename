@@ -22,6 +22,32 @@ const { time } = require("console");
 log4js.configure("log-config.json");
 const eventLogger = log4js.getLogger('event');
 
+const nodemailer = require("nodemailer");
+
+async function send_warning( subject, message ) {
+    let transporter = nodemailer.createTransport({
+        host: env.SMTP_SERVER,
+        port: env.SMTP_PORT,
+      secure: false, // true for 465, false for other ports
+      auth: {
+        user: env.MAIL_USER,
+        pass: env.MAIL_PASSWORD
+      },
+    });
+  
+    // send mail with defined transport object
+    let info = await transporter.sendMail({
+      from: env.MAIL_FROM,
+      to: env.MAIL_TO,
+      subject: subject,
+      text: message
+    });
+  
+    console.log("Test Message sent: %s", info.messageId);  
+    // process.exit();
+}
+send_warning("test", "テストです")
+
 //監視するフォルダーの相対パス
 let watch_dir = env.WATCH_DIR || 'P:/';
 if (!fs.existsSync(watch_dir) ) {
@@ -55,6 +81,7 @@ if (fs.existsSync(`${rename_dir}/day.txt`)) {
 console.log(`day.txt[${day_text}]`);
 
 const image_clipper = require('./imageClipper');
+const { getSystemErrorMap } = require('util');
 
 let timelag = process.argv[3] || env.TIMELAG || 2000; //単位「ミリ秒」
 
@@ -91,6 +118,7 @@ let uncompleted_barcodes = [];
 let timer;
 
 const evaluate_and_or_copy = () => {
+
     let pdate_bdate = photo.date - barcode.date;
     if ( photo.name.length > 0 && barcode.name.length > 0) {
         eventLogger.info(`timelag: ${Math.abs(photo.date - barcode.date)}, photo: ${photo.date}, barcode: ${barcode.date}`);
@@ -127,7 +155,9 @@ const evaluate_and_or_copy = () => {
                 sys.clear_folder(watch_dir);
             } else {
                 if (barcode.number.length>0) {
-                    eventLogger.warn(`バーコードデータ[ ${barcode.number}(${barcode.date}) ] に対応する写真データが得られませんでした。\n写真シャッターセンサーが作動しなかった可能性があります。`);
+                    const message = `バーコードデータ[ ${barcode.number}(${barcode.date}) ] に対応する写真データが得られませんでした。\n写真シャッターが作動しなかった可能性があります。`
+                    send_warning("写真データなし", message )
+                    eventLogger.warn(message);
                         uncompleted_barcodes.push({bnumber:barcode.number, bdate:barcode.date})
                 }
                 barcode_reset();
@@ -155,7 +185,10 @@ watcher.on('ready',function(){
             if (ext.toUpperCase() ==="JPG" || ext.toUpperCase() === "JPEG") {
                 if (photo.name.length>0) {
                     if( photo.name < new_name ) {
-                        eventLogger.warn(`フォトデータ[ ${photo.name}(${photo.date}) ]\nに対応するバーコード情報が得られませんでした。\n余分な写真データが作られたか、バーコードリーダーが作動しなかった可能性があります。`);
+                        const message = `フォトデータ[ ${photo.name}(${photo.date}) ]\nに対応するバーコード情報が得られませんでした。\n余分な写真データが作られたか、バーコードリーダーが作動しなかった可能性があります。`
+                        eventLogger.warn(message);
+                        send_warning("写真データがありません", message)
+
                         sys.remove_file(watch_dir + "/" + photo.name);
                         uncompleted_images.push({pname:photo.name, pdate:photo.date});
                         photo.date = new Date();
@@ -180,7 +213,10 @@ watcher.on('ready',function(){
         if (barcode_items.length > 1) {
             eventLogger.info(`バーコード: ${line}`);
             if (barcode.name.length>0) {
-                eventLogger.warn(`フォトデータ[ ${barcode.name}(${barcode.date}) ]\nに対応するフォトデータが得られませんでした。シャッターセンサーが作動しなかった可能性があります。`);
+                const message = `バーコード[ ${barcode.name}(${barcode.date}) ]\nに対応するフォトデータが得られませんでした。シャッターセンサーが作動しなかった可能性があります。`
+                eventLogger.warn(message);
+                send_warning("写真データがありません", message)
+
                 if (barcode.name.length>0) {
                     uncompleted_barcodes.push({bnumber:barcode.number,bdate:barcode.date});
                 }
@@ -219,10 +255,10 @@ watcher.on('ready',function(){
                 eventLogger.info(uncompleted_images)
                 console.log("処理されなかったバーコードデータ")
                 eventLogger.info(uncompleted_barcodes)
-                console.log("10秒後に終了します");
+                console.log("5秒後に終了します");
                 timer = setTimeout( () => {
                     process.exit();
-                }, 10000);
+                }, 5000);
 
             } else if ( cmd === "C") {
                 if (timer) {

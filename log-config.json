@@ -6,7 +6,7 @@
       "system": {
         "type": "file",
         "filename": "../watch_rename_log/system.log",
-        "backups": "7",
+        "backups": "15",
         "maxLogSize": 5000000,
         "compress": true
       },

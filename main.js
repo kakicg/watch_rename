@@ -213,7 +213,7 @@ watcher.on('ready',function(){
         if (barcode_items.length > 1) {
             eventLogger.info(`バーコード: ${line}`);
             if (barcode.name.length>0) {
-                const message = `バーコード[ ${barcode.name}(${barcode.date}) ]\nに対応するフォトデータが得られませんでした。シャッターセンサーが作動しなかった可能性があります。`
+                const message = `バーコード[ ${barcode.name}(${barcode.date}) ]\nに対応するフォトデータが得られませんでした。シャッターが作動しなかった可能性があります。`
                 eventLogger.warn(message);
                 send_warning("写真データがありません", message)
 

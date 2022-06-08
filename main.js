@@ -25,25 +25,25 @@ const eventLogger = log4js.getLogger('event');
 const nodemailer = require("nodemailer");
 
 async function send_warning( subject, message ) {
-    let transporter = nodemailer.createTransport({
-        host: env.SMTP_SERVER,
-        port: env.SMTP_PORT,
-      secure: false, // true for 465, false for other ports
-      auth: {
-        user: env.MAIL_USER,
-        pass: env.MAIL_PASSWORD
-      },
-    });
+    // let transporter = nodemailer.createTransport({
+    //     host: env.SMTP_SERVER,
+    //     port: env.SMTP_PORT,
+    //   secure: false, // true for 465, false for other ports
+    //   auth: {
+    //     user: env.MAIL_USER,
+    //     pass: env.MAIL_PASSWORD
+    //   },
+    // });
   
-    // send mail with defined transport object
-    let info = await transporter.sendMail({
-      from: env.MAIL_FROM,
-      to: env.MAIL_TO,
-      subject: subject,
-      text: message
-    });
+    // // send mail with defined transport object
+    // let info = await transporter.sendMail({
+    //   from: env.MAIL_FROM,
+    //   to: env.MAIL_TO,
+    //   subject: subject,
+    //   text: message
+    // });
   
-    console.log("Test Message sent: %s", info.messageId);  
+    // console.log("Test Message sent: %s", info.messageId);  
     // process.exit();
 }
 send_warning("test", "テストです")

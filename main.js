@@ -28,9 +28,18 @@ const eventLogger = log4js.getLogger('event');
 
 const nodemailer = require("nodemailer");
 
+const beep = ( interval )=> {
+    setTimeout( ()=> {
+        is_mac && require("child_process").exec("afplay /System/Library/Sounds/Blow.aiff");
+        is_windows && require("child_process").exec("powershell.exe [console]::beep(1000,600)");    
+    }, interval*500);
+}
 async function send_warning( subject, message ) {
-    is_mac && require("child_process").exec("afplay /System/Library/Sounds/Blow.aiff");
-    is_windows && require("child_process").exec("powershell.exe [console]::beep(500,600)");
+    let i=30;
+    while(i>0){
+        beep(i--);
+    }
+
     console.log(`${subject}: ${message}`);
 }
 send_warning("test", "テストです")

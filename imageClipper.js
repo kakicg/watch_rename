@@ -53,8 +53,9 @@ exports.clip_rename = (src, dest, ext, clip_ratio, eventLogger) => {
     let width, height, offset_x, offset_y;
     sharp(src).metadata()
     .then(function(metadata) {
-        width = Math.round(metadata.width*clip_ratio);
+        // width = Math.round(metadata.width*clip_ratio);
         height = Math.round(metadata.height*clip_ratio);
+        width = height;
 
         offset_x = Math.round( (metadata.width-width)/2 );
         offset_y = metadata.height - height;        

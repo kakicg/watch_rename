@@ -1,6 +1,10 @@
 // 第一引数 "test"の場合テストモード
 // 第二引数 テストモードの場合の許容タイムラグ（単位：ミリ秒)
 
+const is_windows = process.platform==='win32'
+const is_mac = process.platform==='darwin'
+const is_linux = process.platform==='linux'
+
 require('dotenv').config({ path: '../watch_rename_env' });
 const env = process.env;
 //テストモード
@@ -25,26 +29,9 @@ const eventLogger = log4js.getLogger('event');
 const nodemailer = require("nodemailer");
 
 async function send_warning( subject, message ) {
-    // let transporter = nodemailer.createTransport({
-    //     host: env.SMTP_SERVER,
-    //     port: env.SMTP_PORT,
-    //   secure: false, // true for 465, false for other ports
-    //   auth: {
-    //     user: env.MAIL_USER,
-    //     pass: env.MAIL_PASSWORD
-    //   },
-    // });
-  
-    // // send mail with defined transport object
-    // let info = await transporter.sendMail({
-    //   from: env.MAIL_FROM,
-    //   to: env.MAIL_TO,
-    //   subject: subject,
-    //   text: message
-    // });
-  
-    // console.log("Test Message sent: %s", info.messageId);  
-    // process.exit();
+    is_mac && require("child_process").exec("afplay /System/Library/Sounds/Blow.aiff");
+    is_windows && require("child_process").exec("powershell.exe [console]::beep(500,600)");
+    console.log(`${subject}: ${message}`);
 }
 send_warning("test", "テストです")
 

@@ -7,4 +7,5 @@ package-lock.json
 test*
 **.log
 event.log
+photo_count.txt
 .env

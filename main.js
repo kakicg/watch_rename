@@ -34,15 +34,15 @@ const beep = ( interval )=> {
         is_windows && require("child_process").exec("powershell.exe [console]::beep(1000,600)");    
     }, interval*500);
 }
-async function send_warning( subject, message ) {
-    let i=30;
+async function send_warning( subject, message, count ) {
+    let i=count;
     while(i>0){
         beep(i--);
     }
 
     console.log(`${subject}: ${message}`);
 }
-// send_warning("test", "テストです")
+send_warning("test", "テストです",1)
 
 //監視するフォルダーの相対パス
 let watch_dir = env.WATCH_DIR || 'P:/';
@@ -88,7 +88,7 @@ if ( !store.get('photo_count') ) {
 }
 
 const display_photo_count = () => {
-    console.log(`写真撮影枚数　(${store.get('reckoned＿date')} 以来): ${store.get('photo_count')}`);
+    console.log(`写真撮影枚数　: ${store.get('photo_count')} (${store.get('reckoned＿date')} 以来)`);
 }
 display_photo_count()
 const image_clipper = require('./imageClipper');
@@ -167,7 +167,7 @@ const evaluate_and_or_copy = () => {
             } else {
                 if (barcode.number.length>0) {
                     const message = `バーコードデータ[ ${barcode.number}(${barcode.date}) ] に対応する写真データが得られませんでした。\n写真シャッターが作動しなかった可能性があります。`
-                    send_warning("写真データなし", message )
+                    send_warning("写真データなし", message, 15 )
                     eventLogger.warn(message);
                         uncompleted_barcodes.push({bnumber:barcode.number, bdate:barcode.date})
                 }
@@ -199,7 +199,7 @@ watcher.on('ready',function(){
                     if( photo.name < new_name ) {
                         const message = `フォトデータ[ ${photo.name}(${photo.date}) ]\nに対応するバーコード情報が得られませんでした。\n余分な写真データが作られたか、バーコードリーダーが作動しなかった可能性があります。`
                         eventLogger.warn(message);
-                        send_warning("写真データがありません", message)
+                        send_warning("バーコード情報がありません", message, 3)
 
                         sys.remove_file(watch_dir + "/" + photo.name);
                         uncompleted_images.push({pname:photo.name, pdate:photo.date});
@@ -225,9 +225,9 @@ watcher.on('ready',function(){
         if (barcode_items.length > 1) {
             eventLogger.info(`バーコード: ${line}`);
             if (barcode.name.length>0) {
-                const message = `バーコード[ ${barcode.name}(${barcode.date}) ]\nに対応するフォトデータが得られませんでした。シャッターが作動しなかった可能性があります。`
+                const message = `バーコード[ ${barcode.name}(${barcode.date}) ]\nに対応するフォトデータが得られませんでした。(シャッターが作動しなかった可能性があります。)`
                 eventLogger.warn(message);
-                send_warning("写真データがありません", message)
+                send_warning("写真データがありません", message, 15)
 
                 if (barcode.name.length>0) {
                     uncompleted_barcodes.push({bnumber:barcode.number,bdate:barcode.date});

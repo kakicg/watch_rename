@@ -42,7 +42,7 @@ async function send_warning( subject, message ) {
 
     console.log(`${subject}: ${message}`);
 }
-send_warning("test", "テストです")
+// send_warning("test", "テストです")
 
 //監視するフォルダーの相対パス
 let watch_dir = env.WATCH_DIR || 'P:/';
@@ -67,7 +67,6 @@ if (!fs.existsSync(rename_dir) || test_mode) {
     sys.check_dir(rename_dir);
 }
 eventLogger.info(`画像書込みフォルダー: ${rename_dir}`);
-
 let day_text = "20310101";
 if (fs.existsSync(`${rename_dir}/day.txt`)) {
     day_text = sys.read_day_text(`${rename_dir}/day.txt`)
@@ -76,6 +75,22 @@ if (fs.existsSync(`${rename_dir}/day.txt`)) {
 
 console.log(`day.txt[${day_text}]`);
 
+
+const Storage = require('node-storage');
+const store = new Storage('photo_count.txt');
+let reckoned＿date = store.get('reckoned＿date');　//カウンターの起算日
+if ( !reckoned＿date ) {
+    reckoned＿date = new Date();
+    store.put('reckoned＿date', reckoned＿date.toFormat('YYYY/MM/DD'));
+}
+if ( !store.get('photo_count') ) {
+    store.put('photo_count', 0);
+}
+
+const display_photo_count = () => {
+    console.log(`写真撮影枚数　(${store.get('reckoned＿date')} 以来): ${store.get('photo_count')}`);
+}
+display_photo_count()
 const image_clipper = require('./imageClipper');
 const { getSystemErrorMap } = require('util');
 
@@ -179,6 +194,7 @@ watcher.on('ready',function(){
         if(exts.length>1) {
             ext=exts[exts.length-1];
             if (ext.toUpperCase() ==="JPG" || ext.toUpperCase() === "JPEG") {
+                store.put('photo_count', store.get('photo_count') + 1 );
                 if (photo.name.length>0) {
                     if( photo.name < new_name ) {
                         const message = `フォトデータ[ ${photo.name}(${photo.date}) ]\nに対応するバーコード情報が得られませんでした。\n余分な写真データが作られたか、バーコードリーダーが作動しなかった可能性があります。`
@@ -238,6 +254,7 @@ watcher.on('ready',function(){
                 console.log("    L: 未処理リスト\n");
                 console.log("    Q: 終了\n");
                 console.log("    C: 終了をキャンセル\n");
+                console.log("    P: 写真撮影累計\n");
 
             } else if ( cmd === "Q" || cmd == "E" ) {
                 if (photo.name.length>0) {
@@ -264,6 +281,8 @@ watcher.on('ready',function(){
                         timer = null;
                     })
                 }
+            } else if ( cmd === 'P') {
+                display_photo_count();
             } else if ( cmd === "L") {
                 if (photo.name.length>0) {
                     uncompleted_images.push({pname:photo.name, pdate:photo.date})

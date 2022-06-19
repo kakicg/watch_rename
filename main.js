@@ -133,7 +133,7 @@ const evaluate_and_or_copy = () => {
     let pdate_bdate = photo.date - barcode.date;
     if ( photo.name.length > 0 && barcode.name.length > 0) {
         eventLogger.info(`timelag: ${Math.abs(photo.date - barcode.date)}, photo: ${photo.date}, barcode: ${barcode.date}`);
-        if (Math.abs(pdate_bdate) < timelag) {
+        if ( Math.abs(pdate_bdate) < timelag || test_mode ) {
             let src = watch_dir + "/" + photo.name;
             let exts = photo.name.split(".");
             let ext ="";
@@ -182,9 +182,7 @@ watcher.on('ready',function(){
 
     //準備完了
     console.log("フォルダー監視プログラム稼働中。");
-    if (test_mode) {
-        eventLogger.trace("[ テストモード ]");
-    }
+    test_mode && eventLogger.trace("[ テストモード ]");
 
     //ファイル受け取り
     watcher.on( 'add', function(file_name) {
@@ -268,10 +266,10 @@ watcher.on('ready',function(){
                 eventLogger.info(uncompleted_images)
                 console.log("処理されなかったバーコードデータ")
                 eventLogger.info(uncompleted_barcodes)
-                console.log("5秒後に終了します");
+                test_mode || console.log("5秒後に終了します");
                 timer = setTimeout( () => {
                     process.exit();
-                }, 5000);
+                }, test_mode ? 0 : 5000 );
 
             } else if ( cmd === "C") {
                 if (timer) {

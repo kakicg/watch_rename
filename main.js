@@ -26,8 +26,6 @@ const { time } = require("console");
 log4js.configure("log-config.json");
 const eventLogger = log4js.getLogger('event');
 
-const nodemailer = require("nodemailer");
-
 const beep = ( interval )=> {
     setTimeout( ()=> {
         is_mac && require("child_process").exec("afplay /System/Library/Sounds/Blow.aiff");
@@ -74,7 +72,6 @@ if (fs.existsSync(`${rename_dir}/day.txt`)) {
 }
 
 console.log(`day.txt[${day_text}]`);
-
 
 const Storage = require('node-storage');
 const store = new Storage('photo_count.txt');
@@ -183,6 +180,7 @@ watcher.on('ready',function(){
     //準備完了
     console.log("フォルダー監視プログラム稼働中。");
     test_mode && eventLogger.trace("[ テストモード ]");
+    test_mode && sys.test_resize_files('../test_images', '../watch')
 
     //ファイル受け取り
     watcher.on( 'add', function(file_name) {

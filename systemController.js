@@ -66,17 +66,16 @@ exports.test_resize_files = (s_dir, d_dir) => {
         }, 6000*count );
         count++;
     });
-    exports.copy_file = (src, d_dir) => {
-        console.log(`${src} -> ${d_dir}`)
+}
+exports.copy_file = (src, d_dir) => {
+    console.log(`${src} -> ${d_dir}`)
 
-        if ( fs.existsSync(src) ) {
-            const current_file_name = path.basename(src);
-    
-            fs.copyFile(src, `${d_dir}`, (err) => {
-                if (err) throw err;
-                console.log('ファイルをコピーしました');
-            });
-        }
+    if ( fs.existsSync(src) ) {
+        const current_file_name = path.basename(src);
+
+        fs.copyFile(src, `${d_dir}`, (err) => {
+            if (err) throw err;
+            console.log('ファイルをコピーしました');
+        });
     }
-    
 }

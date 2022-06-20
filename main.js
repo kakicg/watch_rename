@@ -125,6 +125,54 @@ let uncompleted_images = [];
 let uncompleted_barcodes = [];
 let timer;
 
+const set_barcode_items = (barcode_items) => {
+    barcode.date = new Date();
+    console.log(barcode_items)
+    if (barcode_items[0].length>0) {
+        barcode.size=barcode_items[0]; // barcode_items = [P L M H X]
+        barcode.size=barcode.size[barcode.size.length - 1];
+    } else {
+        barcode.size = 'X';
+        eventLogger.error('高さセンサー情報がありません\n対応する写真はトリミングされません');
+    }
+    barcode.number = barcode_items[1].slice(0,5);
+    barcode.lane = barcode.number.slice(0,2);
+    barcode.name = day_text + barcode.number;
+    eventLogger.info(`サイズ：${barcode.size}\n バーコード: ${barcode.number}\n${barcode.date}`);
+}
+const test_resize_files = (s_dir, d_dir) => {
+    const files = fs.readdirSync(s_dir);
+    let count = 0;
+    console.log(files)
+
+    files.forEach(file => {
+      setTimeout( ()=>{
+            const new_num =  Math.floor( Math.random() * (199 + 1 - 101) ) + 101 ;
+            barcode.number = `99${new_num}`;
+            barcode.lane = barcode.number.slice(0,2);
+            barcode.name = day_text + barcode.number;
+            barcode.size = file.split('.')[0]
+            barcode.date = new Date();
+            eventLogger.info(`サイズ：${barcode.size}\n バーコード: ${barcode.number}\n${barcode.date}`);
+            copy_file( `${s_dir}/${file}`, `${d_dir}/${file}` )
+        }, 6000*count );
+        count++;
+    });
+}
+
+const copy_file = (src, d_dir) => {
+    console.log(`${src} -> ${d_dir}`)
+
+    if ( fs.existsSync(src) ) {
+        const current_file_name = path.basename(src);
+
+        fs.copyFile(src, `${d_dir}`, (err) => {
+            if (err) throw err;
+            console.log('ファイルをコピーしました');
+        });
+    }
+}
+
 const evaluate_and_or_copy = () => {
 
     let pdate_bdate = photo.date - barcode.date;
@@ -180,7 +228,7 @@ watcher.on('ready',function(){
     //準備完了
     console.log("フォルダー監視プログラム稼働中。");
     test_mode && eventLogger.trace("[ テストモード ]");
-    test_mode && sys.test_resize_files('../test_images', '../watch')
+    test_mode && test_resize_files('../test_images', '../watch')
 
     //ファイル受け取り
     watcher.on( 'add', function(file_name) {
@@ -229,19 +277,8 @@ watcher.on('ready',function(){
                     uncompleted_barcodes.push({bnumber:barcode.number,bdate:barcode.date});
                 }
             }
-            barcode.date = new Date();
-            console.log(barcode_items)
-            if (barcode_items[0].length>0) {
-                barcode.size=barcode_items[0]; // barcode_items = [P L M H X]
-                barcode.size=barcode.size[barcode.size.length - 1];
-            } else {
-                barcode.size = 'X';
-                eventLogger.error('高さセンサー情報がありません\n対応する写真はトリミングされません');
-            }
-            barcode.number = barcode_items[1].slice(0,5);
-            barcode.lane = barcode.number.slice(0,2);
-            barcode.name = day_text + barcode.number;
-            eventLogger.info(`サイズ：${barcode.size}\n バーコード: ${barcode.number}\n${barcode.date}`);
+            set_barcode_items(barcode_items)
+            
             evaluate_and_or_copy();
         } else {
             const cmd = barcode_items[0].toUpperCase();

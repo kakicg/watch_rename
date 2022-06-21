@@ -37,10 +37,9 @@ async function send_warning( subject, message, count ) {
     while(i>0){
         beep(i--);
     }
-
     console.log(`${subject}: ${message}`);
 }
-send_warning("test", "テストです",1)
+send_warning("start", "起動中",1)
 
 //監視するフォルダーの相対パス
 let watch_dir = env.WATCH_DIR || 'P:/';
@@ -76,13 +75,12 @@ console.log(`day.txt[${day_text}]`);
 const Storage = require('node-storage');
 const store = new Storage('photo_count.txt');
 let reckoned＿date = store.get('reckoned＿date');　//カウンターの起算日
-if ( !reckoned＿date ) {
+const resetPhotoCounter = ()=> {
     reckoned＿date = new Date();
     store.put('reckoned＿date', reckoned＿date.toFormat('YYYY/MM/DD'));
+    store.put('photo_count', 0)
 }
-if ( !store.get('photo_count') ) {
-    store.put('photo_count', 0);
-}
+reckoned＿date || resetPhotoCounter()
 
 const display_photo_count = () => {
     console.log(`写真撮影枚数　: ${store.get('photo_count')} (${store.get('reckoned＿date')} 以来)`);
@@ -288,6 +286,7 @@ watcher.on('ready',function(){
                 console.log("    Q: 終了\n");
                 console.log("    C: 終了をキャンセル\n");
                 console.log("    P: 写真撮影累計\n");
+                console.log("    PR: 写真撮影累計リセット\n");
 
             } else if ( cmd === "Q" || cmd == "E" ) {
                 if (photo.name.length>0) {
@@ -315,6 +314,9 @@ watcher.on('ready',function(){
                     })
                 }
             } else if ( cmd === 'P') {
+                display_photo_count();
+            } else if ( cmd ==='PR') {
+                resetPhotoCounter();
                 display_photo_count();
             } else if ( cmd === "L") {
                 if (photo.name.length>0) {

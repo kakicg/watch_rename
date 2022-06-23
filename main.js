@@ -142,19 +142,23 @@ const test_resize_files = (s_dir, d_dir) => {
     const files = fs.readdirSync(s_dir);
     let count = 0;
     console.log(files)
-
     files.forEach(file => {
-      setTimeout( ()=>{
-            const new_num =  Math.floor( Math.random() * (199 + 1 - 101) ) + 101 ;
-            barcode.number = `99${new_num}`;
-            barcode.lane = barcode.number.slice(0,2);
-            barcode.name = day_text + barcode.number;
-            barcode.size = file.split('.')[0]
-            barcode.date = new Date();
-            eventLogger.info(`サイズ：${barcode.size}\n バーコード: ${barcode.number}\n${barcode.date}`);
-            copy_file( `${s_dir}/${file}`, `${d_dir}/${file}` )
-        }, 6000*count );
-        count++;
+        let file_strings = file.split('.');
+        const ext = file_strings[file_strings.length -1];
+        console.log (file_strings)
+        if (ext.toUpperCase() ==="JPG" || ext.toUpperCase() === "JPEG") {
+            setTimeout( ()=>{
+                const new_num =  Math.floor( Math.random() * (199 + 1 - 101) ) + 101 ;
+                barcode.number = `99${new_num}`;
+                barcode.lane = barcode.number.slice(0,2);
+                barcode.name = day_text + barcode.number;
+                barcode.size = file.split('.')[0]
+                barcode.date = new Date();
+                eventLogger.info(`サイズ：${barcode.size}\n バーコード: ${barcode.number}\n${barcode.date}`);
+                copy_file( `${s_dir}/${file}`, `${d_dir}/${file}` )
+            }, 6000*count );
+            count++;
+        }
     });
 }
 

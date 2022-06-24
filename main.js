@@ -9,6 +9,7 @@ require('dotenv').config({ path: '../watch_rename_env' });
 const env = process.env;
 //テストモード
 const test_mode = (process.argv[2] === "test");
+const resize_test_mode = (process.argv[2] === "resize");
 //require
 const fs = require("fs");
 const path = require("path");
@@ -138,7 +139,7 @@ const set_barcode_items = (barcode_items) => {
     barcode.name = day_text + barcode.number;
     eventLogger.info(`サイズ：${barcode.size}\n バーコード: ${barcode.number}\n${barcode.date}`);
 }
-const test_resize_files = (s_dir, d_dir) => {
+const test_rename_files = (s_dir, d_dir) => {
     const files = fs.readdirSync(s_dir);
     let count = 0;
     console.log(files)
@@ -160,6 +161,10 @@ const test_resize_files = (s_dir, d_dir) => {
             count++;
         }
     });
+}
+const test_resize_files = () => {
+    console.log('リサイズテスト')
+    image_clipper.difference_image = ('../test_images/P.jpg', '../test_images/bg.jpg', '../resized/P.jpg', 'jpg', eventLogger)
 }
 
 const copy_file = (src, d_dir) => {
@@ -230,7 +235,8 @@ watcher.on('ready',function(){
     //準備完了
     console.log("フォルダー監視プログラム稼働中。");
     test_mode && eventLogger.trace("[ テストモード ]");
-    test_mode && test_resize_files('../test_images', '../watch')
+    test_mode && test_rename_files('../test_images', '../watch')
+    resize_test_mode && test_resize_files('../test_images', '../watch')
 
     //ファイル受け取り
     watcher.on( 'add', function(file_name) {
@@ -304,10 +310,10 @@ watcher.on('ready',function(){
                 eventLogger.info(uncompleted_images)
                 console.log("処理されなかったバーコードデータ")
                 eventLogger.info(uncompleted_barcodes)
-                test_mode || console.log("5秒後に終了します");
+                test_mode || resize_test_mode || console.log("5秒後に終了します");
                 timer = setTimeout( () => {
                     process.exit();
-                }, test_mode ? 0 : 5000 );
+                }, test_mode || resize_test_mode ? 0 : 5000 );
 
             } else if ( cmd === "C") {
                 if (timer) {

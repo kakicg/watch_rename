@@ -47,18 +47,23 @@ const clip_image = (src, dest, ext, width, height, offset_x, offset_y, eventLogg
         console.log(err);
     });
 }
+
 //コンポジット(Difference)
-exports.difference_image = (src, bg, dest, ext, eventLogger) => {
-           
+exports.difference_images = (src, bg, dest, eventLogger) => {
+    console.log(`src:${src}¥n`)
+    console.log(`bg:${bg}¥n`)
+    console.log(`dest:${dest}¥n`)
+    
     sharp(src)
-    .comosit([
-        { input: bg, blend: 'differnece' },
+    .composite([
+        { input: bg, blend: 'difference' },
+        // { input: bg },
       ])
-    .jpeg({quality:image_quality}).toFile(`${dest}.${ext}`)
+    .jpeg({quality:image_quality}).toFile(`${dest}`)
     .then(function(new_file_info) {
-        eventLogger.info(`コンポジット(difference）${src}　> ${dest}.${ext}`);
+        eventLogger.info(`コンポジット(difference）${src}　> ${dest}`);
         
-        let stat = fs.statSync(`${dest}.${ext}`);
+        let stat = fs.statSync(`${dest}`);
         // sys.remove_file(src);
     })
     .catch(function(err) {
@@ -83,25 +88,6 @@ exports.clip_rename = (src, dest, ext, clip_ratio, eventLogger) => {
 
     });
 };
-
-//画像トリミング&リネーム
-exports.difference_images = (src, bg, dest, ext, eventLogger) => {
-    let width, height, offset_x, offset_y;
-    sharp(src).metadata()
-    .then(function(metadata) {
-        // width = Math.round(metadata.width*clip_ratio);
-        height = Math.round(metadata.height*clip_ratio);
-        width = height;
-
-        offset_x = Math.round( (metadata.width-width)/2 );
-        offset_y = metadata.height - height;        
-        eventLogger.info(`width:${width}, height:${height}, offset_x:${offset_x}, offset_y:${offset_y}`);
-
-        clip_image(src, dest, ext, width, height, offset_x, offset_y, eventLogger);
-
-    });
-};
-
 
 //画像CUTOFF処理
 exports.cutoff_move = (src, dest, ext, eventLogger) => {

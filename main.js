@@ -1,4 +1,5 @@
 // 第一引数 "test"の場合テストモード
+// 第一引数 "resize"の場合auto＿resizeのテストモード
 // 第二引数 テストモードの場合の許容タイムラグ（単位：ミリ秒)
 
 const is_windows = process.platform==='win32'
@@ -163,8 +164,8 @@ const test_rename_files = (s_dir, d_dir) => {
     });
 }
 const test_resize_files = () => {
-    console.log('リサイズテスト')
-    image_clipper.difference_image = ('../test_images/P.jpg', '../test_images/bg.jpg', '../resized/P.jpg', 'jpg', eventLogger)
+    image_clipper.difference_images('../test_images/P.jpg', '../test_images/bg.jpg', '../resized/P.jpg', eventLogger)
+    console.log('resizeテスト')
 }
 
 const copy_file = (src, d_dir) => {

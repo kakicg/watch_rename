@@ -55,17 +55,27 @@ exports.difference_images = (src, bg, dest, eventLogger) => {
     console.log(`dest:${dest}¥n`)
     
     sharp(src)
+    // .resize(400, 300, {fit: 'fill'})
     .composite([
         { input: bg, blend: 'difference' },
         // { input: bg },
       ])
-    .jpeg({quality:image_quality}).toFile(`${dest}`)
-    .then(function(new_file_info) {
-        eventLogger.info(`コンポジット(difference）${src}　> ${dest}`);
+    .greyscale()
+    .jpeg({quality:image_quality})
+    .raw()
+    .toBuffer()
+    .then(data => {
+        console.log(data.length)
+     })
+    
+    // .toFile(`${dest}`)
+    // .then(function(new_file_info) {
+    //     eventLogger.info(`コンポジット(difference）${src}　> ${dest}`);
+    //     console.log(`コンポジット(difference）${src}　> ${dest}`)
         
-        let stat = fs.statSync(`${dest}`);
-        // sys.remove_file(src);
-    })
+    //     let stat = fs.statSync(`${dest}`);
+    //     // sys.remove_file(src);
+    // })
     .catch(function(err) {
         console.log(err);
     });

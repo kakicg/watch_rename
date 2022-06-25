@@ -1,3 +1,6 @@
+const is_windows = process.platform==='win32'
+const is_mac = process.platform==='darwin'
+const is_linux = process.platform==='linux'
 const fs = require("fs");
 const path = require("path");
 const log4js = require('log4js');
@@ -67,6 +70,7 @@ exports.test_resize_files = (s_dir, d_dir) => {
         count++;
     });
 }
+
 exports.copy_file = (src, d_dir) => {
     console.log(`${src} -> ${d_dir}`)
 
@@ -78,4 +82,11 @@ exports.copy_file = (src, d_dir) => {
             console.log('ファイルをコピーしました');
         });
     }
+}
+
+exports.beep = ( interval )=> {
+    setTimeout( ()=> {
+        is_mac && require("child_process").exec("afplay /System/Library/Sounds/Blow.aiff");
+        is_windows && require("child_process").exec("powershell.exe [console]::beep(1000,600)");    
+    }, interval*500);
 }

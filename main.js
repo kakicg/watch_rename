@@ -2,10 +2,6 @@
 // 第一引数 "resize"の場合auto＿resizeのテストモード
 // 第二引数 テストモードの場合の許容タイムラグ（単位：ミリ秒)
 
-const is_windows = process.platform==='win32'
-const is_mac = process.platform==='darwin'
-const is_linux = process.platform==='linux'
-
 require('dotenv').config({ path: '../watch_rename_env' });
 const env = process.env;
 //テストモード
@@ -28,16 +24,10 @@ const { time } = require("console");
 log4js.configure("log-config.json");
 const eventLogger = log4js.getLogger('event');
 
-const beep = ( interval )=> {
-    setTimeout( ()=> {
-        is_mac && require("child_process").exec("afplay /System/Library/Sounds/Blow.aiff");
-        is_windows && require("child_process").exec("powershell.exe [console]::beep(1000,600)");    
-    }, interval*500);
-}
 async function send_warning( subject, message, count ) {
     let i=count;
     while(i>0){
-        beep(i--);
+        sys.beep(i--);
     }
     console.log(`${subject}: ${message}`);
 }
@@ -74,6 +64,7 @@ if (fs.existsSync(`${rename_dir}/day.txt`)) {
 
 console.log(`day.txt[${day_text}]`);
 
+//写真カウンター
 const Storage = require('node-storage');
 const store = new Storage('photo_count.txt');
 let reckoned＿date = store.get('reckoned＿date');　//カウンターの起算日
@@ -91,12 +82,16 @@ display_photo_count()
 const image_clipper = require('./imageClipper');
 const { getSystemErrorMap } = require('util');
 
-let timelag = process.argv[3] || env.TIMELAG || 2000; //単位「ミリ秒」
 
+//写真とバーコードの許容時間差
+let timelag = process.argv[3] || env.TIMELAG || 2000; //単位「ミリ秒」
 eventLogger.info(`許容タイムラグ: ${timelag}ミリ秒`);
 
+//直近の写真/バーコード
 let photo = {name:'', date: new Date(0), size:''};
 let barcode = {name:'', date: new Date(0), number: '', lane: '',size:''};
+
+//クリップ画像サイズの設定
 const photo_sizes = [env.XL||'X', env.L||'H', env.M||'M', env.S||'L', env.XS||'P'];
 const clip_ratios = [env.XL_R || 0.7, env.L_R || 0.6, env.M_R || 0.45, env.S_R || 0.33, env.XS_R || 0.28];
 eventLogger.info(`クリップサイズ等級: ${photo_sizes}`);
@@ -139,46 +134,6 @@ const set_barcode_items = (barcode_items) => {
     barcode.lane = barcode.number.slice(0,2);
     barcode.name = day_text + barcode.number;
     eventLogger.info(`サイズ：${barcode.size}\n バーコード: ${barcode.number}\n${barcode.date}`);
-}
-const test_rename_files = (s_dir, d_dir) => {
-    const files = fs.readdirSync(s_dir);
-    let count = 0;
-    console.log(files)
-    files.forEach(file => {
-        let file_strings = file.split('.');
-        const ext = file_strings[file_strings.length -1];
-        console.log (file_strings)
-        if (ext.toUpperCase() ==="JPG" || ext.toUpperCase() === "JPEG") {
-            setTimeout( ()=>{
-                const new_num =  Math.floor( Math.random() * (199 + 1 - 101) ) + 101 ;
-                barcode.number = `99${new_num}`;
-                barcode.lane = barcode.number.slice(0,2);
-                barcode.name = day_text + barcode.number;
-                barcode.size = file.split('.')[0]
-                barcode.date = new Date();
-                eventLogger.info(`サイズ：${barcode.size}\n バーコード: ${barcode.number}\n${barcode.date}`);
-                copy_file( `${s_dir}/${file}`, `${d_dir}/${file}` )
-            }, 6000*count );
-            count++;
-        }
-    });
-}
-const test_resize_files = () => {
-    image_clipper.difference_images('../test_images/P.jpg', '../test_images/bg.jpg', '../resized/P.jpg', eventLogger)
-    console.log('resizeテスト')
-}
-
-const copy_file = (src, d_dir) => {
-    console.log(`${src} -> ${d_dir}`)
-
-    if ( fs.existsSync(src) ) {
-        const current_file_name = path.basename(src);
-
-        fs.copyFile(src, `${d_dir}`, (err) => {
-            if (err) throw err;
-            console.log('ファイルをコピーしました');
-        });
-    }
 }
 
 const evaluate_and_or_copy = () => {
@@ -350,3 +305,35 @@ watcher.on('ready',function(){
     });
     
 }); //watcher.on('ready',function(){
+
+//TEST
+//renameテスト
+const test_rename_files = (s_dir, d_dir) => {
+    const files = fs.readdirSync(s_dir);
+    let count = 0;
+    console.log(files)
+    files.forEach(file => {
+        let file_strings = file.split('.');
+        const ext = file_strings[file_strings.length -1];
+        console.log (file_strings)
+        if (ext.toUpperCase() ==="JPG" || ext.toUpperCase() === "JPEG") {
+            setTimeout( ()=>{
+                const new_num =  Math.floor( Math.random() * (199 + 1 - 101) ) + 101 ;
+                barcode.number = `99${new_num}`;
+                barcode.lane = barcode.number.slice(0,2);
+                barcode.name = day_text + barcode.number;
+                barcode.size = file.split('.')[0]
+                barcode.date = new Date();
+                eventLogger.info(`サイズ：${barcode.size}\n バーコード: ${barcode.number}\n${barcode.date}`);
+                sys.copy_file( `${s_dir}/${file}`, `${d_dir}/${file}` )
+            }, 6000*count );
+            count++;
+        }
+    });
+}
+
+//Auto Resize テスト
+const test_resize_files = () => {
+    image_clipper.difference_images('../test_images/P.jpg', '../test_images/bg.jpg', '../resized/P.jpg', eventLogger)
+    console.log('resizeテスト')
+}

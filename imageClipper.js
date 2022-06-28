@@ -70,10 +70,26 @@ exports.difference_images = (src, bg, dest, eventLogger) => {
     })
 }
 const bbox = (buffer, width, height)=> {
-    const sample = 200
+    const x_sample = 200
+    const y_sample = 200
     const threadhold = 10
+    const x_increment = width/x_sample
+    const y_increment = height/y_sample
     console.log(`Buffer size: ${buffer.length}`)
     console.log(`Info: ${width}, ${height}`)
+    let i=0
+    let j=0
+    let count = 0
+    while ( Math.round(y_increment*j) < height) {
+        while ( Math.round( x_increment*i) < width ) {
+            if ( buffer[ j*width + i ] ) {
+                count++
+            }
+            i++
+        }
+        j++
+    }
+    console.log(count)
 }
 
 //画像トリミング&リネーム

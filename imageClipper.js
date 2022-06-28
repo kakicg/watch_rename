@@ -77,19 +77,28 @@ const bbox = (buffer, width, height)=> {
     const y_increment = height/y_sample
     console.log(`Buffer size: ${buffer.length}`)
     console.log(`Info: ${width}, ${height}`)
-    let i=0
-    let j=0
+    let x = x_increment
+    let y = y_increment
+    let i = Math.round( x )
+    let j = Math.round( y )
     let count = 0
-    while ( Math.round(y_increment*j) < height) {
-        while ( Math.round( x_increment*i) < width ) {
-            if ( buffer[ j*width + i ] ) {
+    while ( j  < height) {
+        while ( i < width ) {
+            if ( buffer[ Math.round( y )*width + Math.round( x ) ] > 10 ) {
                 count++
             }
-            i++
+
+            x = x + x_increment
+            i = Math.round( x )
+
         }
-        j++
+        x = x_increment
+        i = Math.round( x )
+        y = y + y_increment
+        j = Math.round( y )
     }
-    console.log(count)
+    console.log(count, x, y)
+    
 }
 
 //画像トリミング&リネーム

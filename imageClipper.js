@@ -53,34 +53,27 @@ exports.difference_images = (src, bg, dest, eventLogger) => {
     console.log(`src:${src}¥n`)
     console.log(`bg:${bg}¥n`)
     console.log(`dest:${dest}¥n`)
-    
-    sharp(src)
-    // .resize(400, 300, {fit: 'fill'})
+
+    const image = sharp(src)
+ 
+    image
     .composite([
         { input: bg, blend: 'difference' },
-        // { input: bg },
-      ])
+    ])
     .greyscale()
-    .jpeg({quality:image_quality})
+    .normalise()
+    // .jpeg({quality:image_quality})
     .raw()
-    .toBuffer()
-    .then((data) => {
-        console.log(`Buffer size: ${data.length}`)
-     })
-    
-    // .toFile(`${dest}`)
-    // .then(function(new_file_info) {
-    //     eventLogger.info(`コンポジット(difference）${src}　> ${dest}`);
-    //     console.log(`コンポジット(difference）${src}　> ${dest}`)
-        
-    //     let stat = fs.statSync(`${dest}`);
-    //     // sys.remove_file(src);
-    // })
-    .catch(function(err) {
-        console.log(err);
-    });
-
-    
+    .toBuffer( (err, buffer, info)=> {
+        if (err) { image.log.error('optimize error', err); }
+        bbox( buffer, info.width, info.height)
+    })
+}
+const bbox = (buffer, width, height)=> {
+    const sample = 200
+    const threadhold = 10
+    console.log(`Buffer size: ${buffer.length}`)
+    console.log(`Info: ${width}, ${height}`)
 }
 
 //画像トリミング&リネーム

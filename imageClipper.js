@@ -64,8 +64,8 @@ exports.difference_images = (src, bg, dest, eventLogger) => {
     .jpeg({quality:image_quality})
     .raw()
     .toBuffer()
-    .then(data => {
-        console.log(data.length)
+    .then((data) => {
+        console.log(`Buffer size: ${data.length}`)
      })
     
     // .toFile(`${dest}`)
@@ -79,6 +79,8 @@ exports.difference_images = (src, bg, dest, eventLogger) => {
     .catch(function(err) {
         console.log(err);
     });
+
+    
 }
 
 //画像トリミング&リネーム

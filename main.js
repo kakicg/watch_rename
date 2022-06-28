@@ -7,6 +7,7 @@ const env = process.env;
 //テストモード
 const test_mode = (process.argv[2] === "test");
 const resize_test_mode = (process.argv[2] === "resize");
+
 //require
 const fs = require("fs");
 const path = require("path");
@@ -61,27 +62,9 @@ if (fs.existsSync(`${rename_dir}/day.txt`)) {
     day_text = sys.read_day_text(`${rename_dir}/day.txt`)
     day_text = day_text.slice(0,8);
 }
-
 console.log(`day.txt[${day_text}]`);
 
-//写真カウンター
-const Storage = require('node-storage');
-const store = new Storage('photo_count.txt');
-let reckoned＿date = store.get('reckoned＿date');　//カウンターの起算日
-const resetPhotoCounter = ()=> {
-    reckoned＿date = new Date();
-    store.put('reckoned＿date', reckoned＿date.toFormat('YYYY/MM/DD'));
-    store.put('photo_count', 0)
-}
-reckoned＿date || resetPhotoCounter()
-
-const display_photo_count = () => {
-    console.log(`写真撮影枚数　: ${store.get('photo_count')} (${store.get('reckoned＿date')} 以来)`);
-}
-display_photo_count()
 const image_clipper = require('./imageClipper');
-const { getSystemErrorMap } = require('util');
-
 
 //写真とバーコードの許容時間差
 let timelag = process.argv[3] || env.TIMELAG || 2000; //単位「ミリ秒」
@@ -227,7 +210,21 @@ watcher.on('ready',function(){
         evaluate_and_or_copy();
    });
 
-    //バーコード入力
+//写真カウンター
+const Storage = require('node-storage');
+const store = new Storage('photo_count.txt');
+let reckoned＿date = store.get('reckoned＿date');　//カウンターの起算日
+const resetPhotoCounter = ()=> {
+    reckoned＿date = new Date();
+    store.put('reckoned＿date', reckoned＿date.toFormat('YYYY/MM/DD'));
+    store.put('photo_count', 0)
+}
+reckoned＿date || resetPhotoCounter()
+
+const display_photo_count = () => {
+    console.log(`写真撮影枚数　: ${store.get('photo_count')} (${store.get('reckoned＿date')} 以来)`);
+}
+  //バーコード入力
     readline.on('line', function(line){
         let barcode_items = line.split("a");
         if (barcode_items.length > 1) {

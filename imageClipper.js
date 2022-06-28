@@ -66,7 +66,8 @@ exports.difference_images = (src, bg, dest, eventLogger) => {
     .raw()
     .toBuffer( (err, buffer, info)=> {
         if (err) { image.log.error('optimize error', err); }
-        bbox( buffer, info.width, info.height)
+        const {bb_x, bb_y, bb_width, bb_height } = bbox( buffer, info.width, info.height)
+        console.log(bb_x, bb_y, bb_width, bb_height)
     })
 }
 const bbox = (buffer, width, height)=> {
@@ -82,9 +83,17 @@ const bbox = (buffer, width, height)=> {
     let i = Math.round( x )
     let j = Math.round( y )
     let count = 0
+    let bb_x_index_max = 0
+    let bb_x_index_min = width
+    let bb_y_index_max = 0
+    let bb_y_index_min = height
     while ( j  < height) {
         while ( i < width ) {
             if ( buffer[ Math.round( y )*width + Math.round( x ) ] > 10 ) {
+                if (bb_x_index_max < i) { bb_x_index_max = i }
+                if (bb_x_index_min > i) { bb_x_index_min = i }
+                if (bb_y_index_max < j) { bb_y_index_max = j }
+                if (bb_y_index_min > j) { bb_y_index_min = j }
                 count++
             }
 
@@ -98,7 +107,12 @@ const bbox = (buffer, width, height)=> {
         j = Math.round( y )
     }
     console.log(count, x, y)
-    
+    return {
+        bb_x : bb_x_index_min, 
+        bb_y : bb_y_index_min, 
+        bb_width : bb_x_index_max - bb_x_index_min, 
+        bb_height: bb_y_index_max - bb_y_index_min
+    }
 }
 
 //画像トリミング&リネーム

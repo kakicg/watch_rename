@@ -66,9 +66,13 @@ exports.difference_images = (src, bg, dest, eventLogger) => {
     .raw()
     .toBuffer( (err, buffer, info)=> {
         if (err) { image.log.error('optimize error', err); }
-        const {bb_x, bb_y, bb_width, bb_height } = bbox( buffer, info.width, info.height)
-        console.log(bb_x, bb_y, bb_width, bb_height)
+        // const {bb_x, bb_y, bb_width, bb_height } = bbox( buffer, info.width, info.height)
+        const bb_info = bbox( buffer, info.width, info.height)
+        return bb_info
     })
+    // .then((bb_info) => {
+    //     console.log(bb_info.bb_x, bb_info.bb_y, bb_info.bb_width, bb_info.bb_height)
+    // })
 }
 const bbox = (buffer, width, height)=> {
     const x_sample = 200
@@ -106,7 +110,7 @@ const bbox = (buffer, width, height)=> {
         y = y + y_increment
         j = Math.round( y )
     }
-    console.log(count, x, y)
+    console.log(count)
     return {
         bb_x : bb_x_index_min, 
         bb_y : bb_y_index_min, 

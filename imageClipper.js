@@ -50,9 +50,9 @@ const clip_image = (src, dest, ext, width, height, offset_x, offset_y, eventLogg
 
 //コンポジット(Difference)
 exports.difference_images = (src, bg, dest, eventLogger) => {
-    console.log(`src:${src}¥n`)
-    console.log(`bg:${bg}¥n`)
-    console.log(`dest:${dest}¥n`)
+    console.log(`src:${src}\n`)
+    console.log(`bg:${bg}\n`)
+    console.log(`dest:${dest}\n`)
 
     const image = sharp(src)
  
@@ -68,6 +68,9 @@ exports.difference_images = (src, bg, dest, eventLogger) => {
         if (err) { image.log.error('optimize error', err); }
         // const {bb_x, bb_y, bb_width, bb_height } = bbox( buffer, info.width, info.height)
         const bb_info = bbox( buffer, info.width, info.height)
+        console.log(bb_info.bb_x, bb_info.bb_y, bb_info.bb_width, bb_info.bb_height )
+        sharp(src).extract({ width: bb_info.bb_width, height: bb_info.bb_height, left: bb_info.bb_x, top: bb_info.bb_y })
+        .toFile(dest);
         return bb_info
     })
     // .then((bb_info) => {
@@ -93,7 +96,7 @@ const bbox = (buffer, width, height)=> {
     let bb_y_index_min = height
     while ( j  < height) {
         while ( i < width ) {
-            if ( buffer[ Math.round( y )*width + Math.round( x ) ] > 10 ) {
+            if ( buffer[ Math.round( y )*width + Math.round( x ) ] > 30 ) {
                 if (bb_x_index_max < i) { bb_x_index_max = i }
                 if (bb_x_index_min > i) { bb_x_index_min = i }
                 if (bb_y_index_max < j) { bb_y_index_max = j }
@@ -111,6 +114,8 @@ const bbox = (buffer, width, height)=> {
         j = Math.round( y )
     }
     console.log(count)
+    console.log(bb_x_index_min, bb_y_index_min, bb_x_index_max - bb_x_index_min, bb_y_index_max - bb_y_index_min)
+
     return {
         bb_x : bb_x_index_min, 
         bb_y : bb_y_index_min, 

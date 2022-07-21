@@ -331,6 +331,10 @@ const test_rename_files = (s_dir, d_dir) => {
 
 //Auto Resize テスト
 const test_resize_files = () => {
-    image_clipper.difference_images('../test_images/P.jpg', '../test_images/bg.jpg', '../resized/P.jpg', eventLogger)
+    // image_clipper.difference_images('../test_images/X.jpg', '../test_images/bg.jpg', '../resized/P.jpg', eventLogger)
+    const snames = ["P","L","M","H", "X"]
+    snames.forEach( sname => {
+        image_clipper.difference_images(`../test_images/${sname}.jpg`, `../test_images/bg.jpg`, `../resized/${sname}.jpg`, eventLogger)
+    })
     console.log('resizeテスト')
 }

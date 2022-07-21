@@ -67,7 +67,9 @@ console.log(`day.txt[${day_text}]`);
 const image_clipper = require('./imageClipper');
 
 //写真とバーコードの許容時間差
-let timelag = process.argv[3] || env.TIMELAG || 2000; //単位「ミリ秒」
+let timelag = process.argv[3] || env.TIMELAG || 10000; //単位「ミリ秒」
+timelag = 10000; //10秒
+
 eventLogger.info(`許容タイムラグ: ${timelag}ミリ秒`);
 
 //直近の写真/バーコード
@@ -170,6 +172,8 @@ const evaluate_and_or_copy = () => {
 
 //監視イベント
 watcher.on('ready',function(){
+
+    //背景写真を撮る
 
     //準備完了
     console.log("フォルダー監視プログラム稼働中。");

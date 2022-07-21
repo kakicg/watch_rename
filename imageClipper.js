@@ -49,7 +49,7 @@ const clip_image = (src, dest, ext, width, height, offset_x, offset_y, eventLogg
 }
 
 //コンポジット(Difference)
-exports.difference_images = (src, bg, dest, eventLogger) => {
+exports.difference_images = (src, bg, dest, threashold, eventLogger) => {
     console.log(`src:${src}\n`)
     console.log(`bg:${bg}\n`)
     console.log(`dest:${dest}\n`)
@@ -66,10 +66,9 @@ exports.difference_images = (src, bg, dest, eventLogger) => {
     .raw()
     .toBuffer( (err, buffer, info)=> {
         if (err) { image.log.error('optimize error', err); }
-        // const {bb_x, bb_y, bb_width, bb_height } = bbox( buffer, info.width, info.height)
-        const bb_info = bbox( buffer, info.width, info.height)
-        console.log(bb_info.bb_x, bb_info.bb_y, bb_info.bb_width, bb_info.bb_height )
-        sharp(src).extract({ width: bb_info.bb_width, height: bb_info.bb_height, left: bb_info.bb_x, top: bb_info.bb_y })
+        const bb_info = bbox( buffer, info.width, info.height, threashold)
+        console.log(bb_info.x, bb_info.y, bb_info.width, bb_info.height )
+        sharp(src).extract({ width: bb_info.width, height: bb_info.height, left: bb_info.x, top: bb_info.y })
         .toFile(dest);
         return bb_info
     })
@@ -77,7 +76,7 @@ exports.difference_images = (src, bg, dest, eventLogger) => {
     //     console.log(bb_info.bb_x, bb_info.bb_y, bb_info.bb_width, bb_info.bb_height)
     // })
 }
-const bbox = (buffer, width, height)=> {
+const bbox = (buffer, width, height, threashold)=> {
     const x_sample = 200
     const y_sample = 200
     const threadhold = 10
@@ -96,7 +95,7 @@ const bbox = (buffer, width, height)=> {
     let bb_y_index_min = height
     while ( j  < height) {
         while ( i < width ) {
-            if ( buffer[ Math.round( y )*width + Math.round( x ) ] > 30 ) {
+            if ( buffer[ Math.round( y )*width + Math.round( x ) ] > threashold ) {
                 if (bb_x_index_max < i) { bb_x_index_max = i }
                 if (bb_x_index_min > i) { bb_x_index_min = i }
                 if (bb_y_index_max < j) { bb_y_index_max = j }
@@ -113,14 +112,12 @@ const bbox = (buffer, width, height)=> {
         y = y + y_increment
         j = Math.round( y )
     }
-    console.log(count)
-    console.log(bb_x_index_min, bb_y_index_min, bb_x_index_max - bb_x_index_min, bb_y_index_max - bb_y_index_min)
 
     return {
-        bb_x : bb_x_index_min, 
-        bb_y : bb_y_index_min, 
-        bb_width : bb_x_index_max - bb_x_index_min, 
-        bb_height: bb_y_index_max - bb_y_index_min
+        x : bb_x_index_min, 
+        y : bb_y_index_min, 
+        width : bb_x_index_max - bb_x_index_min, 
+        height: bb_y_index_max - bb_y_index_min
     }
 }
 

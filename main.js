@@ -333,8 +333,12 @@ const test_rename_files = (s_dir, d_dir) => {
 const test_resize_files = () => {
     // image_clipper.difference_images('../test_images/X.jpg', '../test_images/bg.jpg', '../resized/P.jpg', eventLogger)
     const snames = ["P","L","M","H", "X"]
-    snames.forEach( sname => {
-        image_clipper.difference_images(`../test_images/${sname}.jpg`, `../test_images/bg.jpg`, `../resized/${sname}.jpg`, eventLogger)
+    const threasholds = [ 20, 30, 40, 50, 60]
+    threasholds.forEach( threashold => {
+        snames.forEach( sname => {
+            image_clipper.difference_images(`../test_images/${sname}.jpg`, `../test_images/bg.jpg`, `../resized/${sname}/${threashold}.jpg`, threashold, eventLogger)
+        })
     })
+    
     console.log('resizeテスト')
 }

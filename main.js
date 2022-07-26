@@ -199,7 +199,7 @@ watcher.on('ready',function(){
             if (ext.toUpperCase() ==="JPG" || ext.toUpperCase() === "JPEG") {
                 store.put('photo_count', store.get('photo_count') + 1 );
                 if (photo.name.length>0) {
-                    if( photo.name < new_name ) {
+                    if( test_mode || photo.name < new_name ) {
                         const message = `フォトデータ[ ${photo.name}(${photo.date}) ]\nに対応するバーコード情報が得られませんでした。\n余分な写真データが作られたか、バーコードリーダーが作動しなかった可能性があります。`
                         eventLogger.warn(message);
                         send_warning("バーコード情報がありません", message, 3)
@@ -218,6 +218,9 @@ watcher.on('ready',function(){
                     eventLogger.info(`フォトデータ: ${photo.name} ${photo.date}`);            
                 }
             } 
+        }
+        if ( test_mode ) {
+            set_barcode_items(["Pa", sys.setTestCode(6)])
         }
         evaluate_and_or_copy();
    });

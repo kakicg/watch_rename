@@ -90,3 +90,12 @@ exports.beep = ( interval )=> {
         is_windows && require("child_process").exec("powershell.exe [console]::beep(1000,600)");    
     }, interval*500);
 }
+
+exports.setTestCode = (n) => {
+    let i=0;
+    let str = ""
+    while ( i<n ) {
+        str = `${str}${Math.floor( Math.random()*10 )}`
+        i++;
+    }
+}

@@ -41,11 +41,16 @@ if (!fs.existsSync(watch_dir) ) {
     watch_dir = "../watch";
     sys.check_dir(watch_dir);
 }
+eventLogger.info(`写真供給フォルダー: ${watch_dir}`);
+
 //Temp画像フォルダー
 const tmp_image_dir = "../tmp_image"
 sys.check_dir(tmp_image_dir);
 
-eventLogger.info(`写真供給フォルダー: ${watch_dir}`);
+//背景画像
+const bg_image_dir = "../bg_image"
+sys.check_dir(bg_image_dir);
+
 
 //リネームファイルが入るフォルダーの相対パス
 let rename_dir = env.RENAMED_DIR || '//192.168.128.11/g_drive';
@@ -142,9 +147,8 @@ const evaluate_and_or_copy = () => {
     
             let p = photo_sizes.indexOf(barcode.size);
             if ( p < 0 ) { p = 0 }
-     
-            image_clipper.clip_rename(src, dest, ext, clip_ratios[p], eventLogger)
-            eventLogger.info(`**** ファイル名:${barcode.name}, クリップサイズ: ${barcode.size}, クリップ率:${clip_ratios[p]}`);
+            env.AUTO_CRIP && image_clipper.difference_images(src, bg, dest, ext, threashold, eventLogger)
+            env.AUTO_CRIP || image_clipper.clip_rename(src, dest, ext, clip_ratios[p], eventLogger)
 
             photo_reset();
             barcode_reset();

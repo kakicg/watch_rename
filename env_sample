@@ -20,4 +20,4 @@ M_R=0.72
 S_R=0.61
 XS_R=0.52
 //自動トリミング
-AUTO_CRIP=false
+AUTO_CLIP=false

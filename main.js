@@ -50,6 +50,10 @@ sys.check_dir(tmp_image_dir);
 //背景画像
 const bg_image_dir = "../bg_image"
 sys.check_dir(bg_image_dir);
+const bg_img = `${bg_image_dir}/bg.jpg`;
+env.AUTO_CLIP && console.log('Auto clip mode\n')
+const clip_threashold = env.CLIP_THREASHOULD
+
 
 
 //リネームファイルが入るフォルダーの相対パス
@@ -147,8 +151,8 @@ const evaluate_and_or_copy = () => {
     
             let p = photo_sizes.indexOf(barcode.size);
             if ( p < 0 ) { p = 0 }
-            env.AUTO_CRIP && image_clipper.difference_images(src, bg, dest, ext, threashold, eventLogger)
-            env.AUTO_CRIP || image_clipper.clip_rename(src, dest, ext, clip_ratios[p], eventLogger)
+            env.AUTO_CLIP && image_clipper.difference_clip(src, bg_img, dest, ext, clip_threashold, eventLogger)
+            env.AUTO_CLIP || image_clipper.clip_rename(src, dest, ext, clip_ratios[p], eventLogger)
 
             photo_reset();
             barcode_reset();

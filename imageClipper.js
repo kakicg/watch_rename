@@ -37,7 +37,7 @@ const clip_image = (src, dest, ext, width, height, offset_x, offset_y, eventLogg
     .extract({ width: width, height: height, left: offset_x, top: offset_y }).resize(image_width)
     .normalise().jpeg({quality:image_quality}).toFile(`${dest}.${ext}`)
     .then(function(new_file_info) {
-        eventLogger.info(`リネーム（${src}　> ${dest}.${ext}`);
+        eventLogger.info(`リネーム（${src} > ${dest}.${ext}`);
         
         let stat = fs.statSync(`${dest}.${ext}`);
         console.log(`ファイルサイズ: ${Math.round(stat.size/1024)}K\n`);
@@ -49,7 +49,7 @@ const clip_image = (src, dest, ext, width, height, offset_x, offset_y, eventLogg
 }
 
 //コンポジット(Difference)
-exports.difference_clip (src, bg, dest, ext, threashold, eventLogger) {
+exports.difference_clip  = (src, bg, dest, ext, threashold, eventLogger) => {
     const image = sharp(src)
     image
     .composite([
@@ -64,7 +64,17 @@ exports.difference_clip (src, bg, dest, ext, threashold, eventLogger) {
         const bb_info = bbox( buffer, info.width, info.height, threashold)
         console.log(bb_info.x, bb_info.y, bb_info.width, bb_info.height )
         sharp(src).extract({ width: bb_info.width, height: bb_info.height, left: bb_info.x, top: bb_info.y })
-        .toFile(`${dest}.${ext}`);
+        .toFile(`${dest}.${ext}`)
+        .then(function(new_file_info) {
+            eventLogger.info(`リネーム（${src} > ${dest}.${ext}`);
+            
+            let stat = fs.statSync(`${dest}.${ext}`);
+            console.log(`ファイルサイズ: ${Math.round(stat.size/1024)}K\n`);
+            sys.remove_file(src);
+        })
+        .catch(function(err) {
+            console.log(err);
+        });
         return bb_info
     })
 

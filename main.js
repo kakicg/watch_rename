@@ -217,16 +217,16 @@ watcher.on('ready',function(){
 //写真カウンター
 const Storage = require('node-storage');
 const store = new Storage('photo_count.txt');
-let reckoned＿date = store.get('reckoned＿date');　//カウンターの起算日
+let reckoned_date = store.get('reckoned_date'); //カウンターの起算日
 const resetPhotoCounter = ()=> {
-    reckoned＿date = new Date();
-    store.put('reckoned＿date', reckoned＿date.toFormat('YYYY/MM/DD'));
+    reckoned_date = new Date();
+    store.put('reckoned_date', reckoned_date.toFormat('YYYY/MM/DD'));
     store.put('photo_count', 0)
 }
-reckoned＿date || resetPhotoCounter()
+reckoned_date || resetPhotoCounter()
 
 const display_photo_count = () => {
-    console.log(`写真撮影枚数　: ${store.get('photo_count')} (${store.get('reckoned＿date')} 以来)`);
+    console.log(`写真撮影枚数　: ${store.get('photo_count')} (${store.get('reckoned_date')} 以来)`);
 }
   //バーコード入力
     readline.on('line', function(line){

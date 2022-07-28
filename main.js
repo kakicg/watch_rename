@@ -347,11 +347,23 @@ const test_rename_files = (s_dir, d_dir) => {
 //Auto Resize テスト
 const test_resize_files = () => {
     // image_clipper.difference_images('../test_images/X.jpg', '../test_images/bg.jpg', '../resized/P.jpg', eventLogger)
-    const snames = ["P","L","M","H", "X"]
+    const s_dir = "../test_images"
+    const d_dir = "../resized"
+    const files = fs.readdirSync(s_dir);
+
     const threasholds = [ 20, 30, 40, 50, 60]
-    threasholds.forEach( threashold => {
-        snames.forEach( sname => {
-            image_clipper.difference_images(`../test_images/${sname}.jpg`, `../test_images/bg.jpg`, `../resized/${sname}/${threashold}.jpg`, threashold, eventLogger)
+    
+    files.forEach( sname => {
+        sname = sname.split(".")[0]
+        if (sname.length === 0) { return }
+        console.log(sname)
+        sys.check_dir(`${d_dir}/${sname}`);
+        threasholds.forEach( threashold => {
+            const s_file = `${s_dir}/${sname}.jpg`
+            const bg_file =  `../bg_image/bg.jpg`
+            const d_file = `${d_dir}/${sname}/${threashold}.jpg`
+            console.log(`${s_file} / ${bg_file} / ${d_file}`)
+            image_clipper.difference_images( s_file, bg_file, d_file, threashold, eventLogger)
         })
     })
     

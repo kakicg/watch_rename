@@ -65,7 +65,6 @@ exports.test_resize_files = (s_dir, d_dir) => {
         // }));
         setTimeout( ()=>{
             this.copy_file( `${s_dir}/${file}`, `${d_dir}/${file}` )
-            console.log('Pa0112345\n')
         }, 6000*count );
         count++;
     });
@@ -91,11 +90,12 @@ exports.beep = ( interval )=> {
     }, interval*500);
 }
 
-exports.setTestCode = (n) => {
+exports.setTestCode = (n=3) => {
     let i=0;
     let str = ""
     while ( i<n ) {
         str = `${str}${Math.floor( Math.random()*10 )}`
         i++;
     }
+    return `99${str}`
 }

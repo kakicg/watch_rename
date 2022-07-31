@@ -80,33 +80,30 @@ exports.difference_clip  = (src, bg, dest, ext, threashold, eventLogger) => {
 
 }
 
-exports.difference_images = (src, bg, dest, threashold, eventLogger) => {
-    console.log(`src:${src}\n`)
-    console.log(`bg:${bg}\n`)
-    console.log(`dest:${dest}\n`)
+// exports.difference_images = (src, bg, dest, threashold, eventLogger) => {
+//     console.log(`src:${src}\n`)
+//     console.log(`bg:${bg}\n`)
+//     console.log(`dest:${dest}\n`)
 
-    const image = sharp(src)
+//     const image = sharp(src)
  
-    image
-    .composite([
-        { input: bg, blend: 'difference' },
-    ])
-    .greyscale()
-    .normalise()
-    // .jpeg({quality:image_quality})
-    .raw()
-    .toBuffer( (err, buffer, info)=> {
-        if (err) { image.log.error('optimize error', err); }
-        const bb_info = bbox( buffer, info.width, info.height, threashold)
-        console.log(bb_info.x, bb_info.y, bb_info.width, bb_info.height )
-        sharp(src).extract({ width: bb_info.width, height: bb_info.height, left: bb_info.x, top: bb_info.y })
-        .toFile(dest);
-        return bb_info
-    })
-    // .then((bb_info) => {
-    //     console.log(bb_info.bb_x, bb_info.bb_y, bb_info.bb_width, bb_info.bb_height)
-    // })
-}
+//     image
+//     .composite([
+//         { input: bg, blend: 'difference' },
+//     ])
+//     .greyscale()
+//     .normalise()
+//     // .jpeg({quality:image_quality})
+//     .raw()
+//     .toBuffer( (err, buffer, info)=> {
+//         if (err) { image.log.error('optimize error', err); }
+//         const bb_info = bbox( buffer, info.width, info.height, threashold)
+//         console.log(bb_info.x, bb_info.y, bb_info.width, bb_info.height )
+//         sharp(src).extract({ width: bb_info.width, height: bb_info.height, left: bb_info.x, top: bb_info.y })
+//         .toFile(dest);
+//         return bb_info
+//     })
+// }
 const bbox = (buffer, width, height, threashold)=> {
     const x_sample = 200
     const y_sample = 200

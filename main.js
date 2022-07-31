@@ -7,6 +7,8 @@ const env = process.env;
 //テストモード
 const test_mode = (process.argv[2] === "test");
 const resize_test_mode = (process.argv[2] === "resize");
+const auto_clip_mode = env.AUTO_CLIP
+auto_clip_mode && console.log('Auto clip mode\n')
 
 //require
 const fs = require("fs");
@@ -51,7 +53,6 @@ sys.check_dir(tmp_image_dir);
 const bg_image_dir = "../bg_image"
 sys.check_dir(bg_image_dir);
 const bg_img = `${bg_image_dir}/bg.jpg`;
-env.AUTO_CLIP && console.log('Auto clip mode\n')
 const clip_threashold = env.CLIP_THREASHOULD
 
 
@@ -187,16 +188,26 @@ watcher.on('ready',function(){
     console.log("フォルダー監視プログラム稼働中。");
     test_mode && eventLogger.trace("[ テストモード ]");
     test_mode && test_rename_files('../test_images', '../watch')
-    resize_test_mode && test_resize_files('../test_images', '../watch')
-
+    // resize_test_mode && test_resize_files('../test_images', '../watch')
+    let bg_image_mode = true
+    console.log(`背景画像を撮影してください`)
     //ファイル受け取り
     watcher.on( 'add', function(file_name) {
         const new_name = path.basename(file_name);
         let exts = new_name.split(".");
-        eventLogger.info(`追加されたファイル: ${new_name}`);            
+        eventLogger.info(`追加されたファイル: ${file_name}`);            
         if(exts.length>1) {
             ext=exts[exts.length-1];
             if (ext.toUpperCase() ==="JPG" || ext.toUpperCase() === "JPEG") {
+                if ( bg_image_mode ) {
+                    console.log("背景撮影モード")
+                    fs.rename( file_name, bg_img, (err) => {
+                        if (err) throw err;
+                    
+                        console.log('背景画像をセットしました');
+                    });
+                    return
+                }        
                 store.put('photo_count', store.get('photo_count') + 1 );
                 if (photo.name.length>0) {
                     if( test_mode || photo.name < new_name ) {
@@ -220,7 +231,7 @@ watcher.on('ready',function(){
             } 
         }
         if ( test_mode ) {
-            set_barcode_items(["Pa", sys.setTestCode(6)])
+            set_barcode_items(["P", sys.setTestCode()])
         }
         evaluate_and_or_copy();
    });
@@ -239,7 +250,7 @@ reckoned_date || resetPhotoCounter()
 const display_photo_count = () => {
     console.log(`写真撮影枚数　: ${store.get('photo_count')} (${store.get('reckoned_date')} 以来)`);
 }
-  //バーコード入力
+  // TEXTインプット : バーコード入力 / コマンド入力
     readline.on('line', function(line){
         let barcode_items = line.split("a");
         if (barcode_items.length > 1) {
@@ -260,13 +271,17 @@ const display_photo_count = () => {
             const cmd = barcode_items[0].toUpperCase();
             if ( cmd === "" ) {
                 console.log("コマンドリスト\n");
+                console.log("    S: 撮影開始\n");
                 console.log("    L: 未処理リスト\n");
                 console.log("    Q: 終了\n");
                 console.log("    C: 終了をキャンセル\n");
                 console.log("    P: 写真撮影累計\n");
                 console.log("    PR: 写真撮影累計リセット\n");
 
-            } else if ( cmd === "Q" || cmd == "E" ) {
+            } else if ( cmd === "S" ) {
+                console.log("商品撮影を開始します")
+                bg_image_mode = false
+            }  else if ( cmd === "Q" || cmd == "E" ) {
                 if (photo.name.length>0) {
                     uncompleted_images.push({pname:photo.name, pdate:photo.date})
                 }
@@ -278,10 +293,10 @@ const display_photo_count = () => {
                 eventLogger.info(uncompleted_images)
                 console.log("処理されなかったバーコードデータ")
                 eventLogger.info(uncompleted_barcodes)
-                test_mode || resize_test_mode || console.log("5秒後に終了します");
+                test_mode || resize_test_mode || auto_clip_mode || console.log("5秒後に終了します");
                 timer = setTimeout( () => {
                     process.exit();
-                }, test_mode || resize_test_mode ? 0 : 5000 );
+                }, test_mode || resize_test_mode || auto_clip_mode ? 0 : 5000 );
 
             } else if ( cmd === "C") {
                 if (timer) {
@@ -326,46 +341,45 @@ const test_rename_files = (s_dir, d_dir) => {
     console.log(files)
     files.forEach(file => {
         let file_strings = file.split('.');
+        if (file_strings[0].length === 0) { return }
+
         const ext = file_strings[file_strings.length -1];
         console.log (file_strings)
         if (ext.toUpperCase() ==="JPG" || ext.toUpperCase() === "JPEG") {
             setTimeout( ()=>{
                 const new_num =  Math.floor( Math.random() * (199 + 1 - 101) ) + 101 ;
-                barcode.number = `99${new_num}`;
-                barcode.lane = barcode.number.slice(0,2);
-                barcode.name = day_text + barcode.number;
-                barcode.size = file.split('.')[0]
-                barcode.date = new Date();
+                const barcode_items = [ 'P', sys.setTestCode()]
+                set_barcode_items(barcode_items)
                 eventLogger.info(`サイズ：${barcode.size}\n バーコード: ${barcode.number}\n${barcode.date}`);
                 sys.copy_file( `${s_dir}/${file}`, `${d_dir}/${file}` )
-            }, 6000*count );
+            }, 2000*count );
             count++;
         }
     });
 }
 
-//Auto Resize テスト
-const test_resize_files = () => {
-    // image_clipper.difference_images('../test_images/X.jpg', '../test_images/bg.jpg', '../resized/P.jpg', eventLogger)
-    const s_dir = "../test_images"
-    const d_dir = "../resized"
-    const files = fs.readdirSync(s_dir);
+// //Auto Resize テスト
+// const test_resize_files = () => {
+//     // image_clipper.difference_images('../test_images/X.jpg', '../test_images/bg.jpg', '../resized/P.jpg', eventLogger)
+//     const s_dir = "../test_images"
+//     const d_dir = "../resized"
+//     const files = fs.readdirSync(s_dir);
 
-    const threasholds = [ 20, 30, 40, 50, 60]
+//     const threasholds = [ 20, 30, 40, 50, 60]
     
-    files.forEach( sname => {
-        sname = sname.split(".")[0]
-        if (sname.length === 0) { return }
-        console.log(sname)
-        sys.check_dir(`${d_dir}/${sname}`);
-        threasholds.forEach( threashold => {
-            const s_file = `${s_dir}/${sname}.jpg`
-            const bg_file =  `../bg_image/bg.jpg`
-            const d_file = `${d_dir}/${sname}/${threashold}.jpg`
-            console.log(`${s_file} / ${bg_file} / ${d_file}`)
-            image_clipper.difference_images( s_file, bg_file, d_file, threashold, eventLogger)
-        })
-    })
+//     files.forEach( sname => {
+//         sname = sname.split(".")[0]
+//         if (sname.length === 0) { return }
+//         console.log(sname)
+//         sys.check_dir(`${d_dir}/${sname}`);
+//         threasholds.forEach( threashold => {
+//             const s_file = `${s_dir}/${sname}.jpg`
+//             const bg_file =  `../bg_image/bg.jpg`
+//             const d_file = `${d_dir}/${sname}/${threashold}.jpg`
+//             console.log(`${s_file} / ${bg_file} / ${d_file}`)
+//             image_clipper.difference_images( s_file, bg_file, d_file, threashold, eventLogger)
+//         })
+//     })
     
-    console.log('resizeテスト')
-}
+//     console.log('resizeテスト')
+// }

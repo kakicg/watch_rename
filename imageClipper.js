@@ -133,12 +133,23 @@ const bbox = (buffer, width, height, threashold)=> {
 
             x = x + x_increment
             i = Math.round( x )
-
+            
         }
         x = x_increment
         i = Math.round( x )
         y = y + y_increment
         j = Math.round( y )
+    }
+    let result_info = {
+        x : bb_x_index_min, 
+        y : bb_y_index_min, 
+        width : bb_x_index_max - bb_x_index_min, 
+        height: bb_y_index_max - bb_y_index_min
+    }
+    if( result_info.width < result_info.height ) {
+        result_info.x = Math.floor( result_info.x - (result_info.height - result_info.width)/2 )
+        if (result_info.x < 0) {result_info.x = 0 }
+        result_info.width = result_info.height
     }
 
     return {

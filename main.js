@@ -188,8 +188,10 @@ watcher.on('ready',function(){
     console.log("フォルダー監視プログラム稼働中。");
     test_mode && eventLogger.trace("[ テストモード ]");
     test_mode && test_rename_files('../test_images', '../watch')
-    // resize_test_mode && test_resize_files('../test_images', '../watch')
+    resize_test_mode && test_resize_files('../test_images', '../watch')
     let bg_image_mode = true
+    if ( test_mode || resize_test_mode )  bg_image_mode = false
+
     console.log(`背景画像を撮影してください`)
     //ファイル受け取り
     watcher.on( 'add', function(file_name) {
@@ -359,27 +361,27 @@ const test_rename_files = (s_dir, d_dir) => {
 }
 
 // //Auto Resize テスト
-// const test_resize_files = () => {
-//     // image_clipper.difference_images('../test_images/X.jpg', '../test_images/bg.jpg', '../resized/P.jpg', eventLogger)
-//     const s_dir = "../test_images"
-//     const d_dir = "../resized"
-//     const files = fs.readdirSync(s_dir);
+const test_resize_files = () => {
+    // image_clipper.difference_images('../test_images/X.jpg', '../test_images/bg.jpg', '../resized/P.jpg', eventLogger)
+    const s_dir = "../test_images"
+    const d_dir = "../resized"
+    const files = fs.readdirSync(s_dir);
 
-//     const threasholds = [ 20, 30, 40, 50, 60]
+    const threasholds = [ 20, 30, 40, 50, 60]
     
-//     files.forEach( sname => {
-//         sname = sname.split(".")[0]
-//         if (sname.length === 0) { return }
-//         console.log(sname)
-//         sys.check_dir(`${d_dir}/${sname}`);
-//         threasholds.forEach( threashold => {
-//             const s_file = `${s_dir}/${sname}.jpg`
-//             const bg_file =  `../bg_image/bg.jpg`
-//             const d_file = `${d_dir}/${sname}/${threashold}.jpg`
-//             console.log(`${s_file} / ${bg_file} / ${d_file}`)
-//             image_clipper.difference_images( s_file, bg_file, d_file, threashold, eventLogger)
-//         })
-//     })
+    files.forEach( sname => {
+        sname = sname.split(".")[0]
+        if (sname.length === 0) { return }
+        console.log(sname)
+        sys.check_dir(`${d_dir}/${sname}`);
+        threasholds.forEach( threashold => {
+            const s_file = `${s_dir}/${sname}.jpg`
+            const bg_file =  `../bg_image/bg.jpg`
+            const d_file = `${d_dir}/${sname}/${threashold}.jpg`
+            console.log(`${s_file} / ${bg_file} / ${d_file}`)
+            image_clipper.difference_images( s_file, bg_file, d_file, threashold, eventLogger)
+        })
+    })
     
-//     console.log('resizeテスト')
-// }
+    console.log('resizeテスト')
+}

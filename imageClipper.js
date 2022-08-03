@@ -80,30 +80,30 @@ exports.difference_clip  = (src, bg, dest, ext, threashold, eventLogger) => {
 
 }
 
-// exports.difference_images = (src, bg, dest, threashold, eventLogger) => {
-//     console.log(`src:${src}\n`)
-//     console.log(`bg:${bg}\n`)
-//     console.log(`dest:${dest}\n`)
+exports.difference_images = (src, bg, dest, threashold, eventLogger) => {
+    console.log(`src:${src}\n`)
+    console.log(`bg:${bg}\n`)
+    console.log(`dest:${dest}\n`)
 
-//     const image = sharp(src)
+    const image = sharp(src)
  
-//     image
-//     .composite([
-//         { input: bg, blend: 'difference' },
-//     ])
-//     .greyscale()
-//     .normalise()
-//     // .jpeg({quality:image_quality})
-//     .raw()
-//     .toBuffer( (err, buffer, info)=> {
-//         if (err) { image.log.error('optimize error', err); }
-//         const bb_info = bbox( buffer, info.width, info.height, threashold)
-//         console.log(bb_info.x, bb_info.y, bb_info.width, bb_info.height )
-//         sharp(src).extract({ width: bb_info.width, height: bb_info.height, left: bb_info.x, top: bb_info.y })
-//         .toFile(dest);
-//         return bb_info
-//     })
-// }
+    image
+    .composite([
+        { input: bg, blend: 'difference' },
+    ])
+    .greyscale()
+    .normalise()
+    // .jpeg({quality:image_quality})
+    .raw()
+    .toBuffer( (err, buffer, info)=> {
+        if (err) { image.log.error('optimize error', err); }
+        const bb_info = bbox( buffer, info.width, info.height, threashold)
+        console.log(bb_info.x, bb_info.y, bb_info.width, bb_info.height )
+        sharp(src).extract({ width: bb_info.width, height: bb_info.height, left: bb_info.x, top: bb_info.y })
+        .toFile(dest);
+        return bb_info
+    })
+}
 const bbox = (buffer, width, height, threashold)=> {
     const x_sample = 200
     const y_sample = 200
@@ -146,18 +146,19 @@ const bbox = (buffer, width, height, threashold)=> {
         width : bb_x_index_max - bb_x_index_min, 
         height: bb_y_index_max - bb_y_index_min
     }
-    if( result_info.width < result_info.height ) {
+    if( result_info.width < result_info.height ) { 
+        // 縦長
         result_info.x = Math.floor( result_info.x - (result_info.height - result_info.width)/2 )
         if (result_info.x < 0) {result_info.x = 0 }
         result_info.width = result_info.height
+    }　else { 
+        //横長
+        result_info.y = result_info.y - ( result_info.width - result_info.height )
+        if (result_info.y < 0 ) { result_info.y = 0 }
+        result_info.height = result_info.width;
+        if ( result_info.height > height ) {result_info.height = height}
     }
-
-    return {
-        x : bb_x_index_min, 
-        y : bb_y_index_min, 
-        width : bb_x_index_max - bb_x_index_min, 
-        height: bb_y_index_max - bb_y_index_min
-    }
+    return result_info
 }
 
 //画像トリミング&リネーム
@@ -177,18 +178,3 @@ exports.clip_rename = (src, dest, ext, clip_ratio, eventLogger) => {
 
     });
 };
-
-//画像CUTOFF処理
-exports.cutoff_move = (src, dest, ext, eventLogger) => {
-    let width, height, offset_x, offset_y;
-    sharp(src).metadata()
-    .then(function(metadata) {
-        width = Math.round(metadata.height*cutoff);
-        height = Math.round(metadata.height);
-
-        offset_x = Math.round( (metadata.width-width)/2 );
-        offset_y = 0;        
-
-        cutoff_image(src, dest, ext, width, height, offset_x, offset_y, eventLogger);
-    });
-}

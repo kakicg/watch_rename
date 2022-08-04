@@ -71,7 +71,7 @@ exports.test_resize_files = (s_dir, d_dir) => {
 }
 
 exports.copy_file = (src, d_dir) => {
-    console.log(`${src} -> ${d_dir}`)
+    console.log(`copy: ${src} -> ${d_dir}`)
 
     if ( fs.existsSync(src) ) {
         const current_file_name = path.basename(src);
@@ -79,6 +79,17 @@ exports.copy_file = (src, d_dir) => {
         fs.copyFile(src, `${d_dir}`, (err) => {
             if (err) throw err;
             console.log('ファイルをコピーしました');
+        });
+    }
+}
+
+exports.move_file = (src, dest) => {
+    console.log(`move: ${src} -> ${dest}`)
+
+    if ( fs.existsSync(src) ) {
+        fs.rename(src, `${dest}`, (err) => {
+            if (err) throw err;
+            console.log('ファイルを移動しました');
         });
     }
 }

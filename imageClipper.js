@@ -61,6 +61,9 @@ exports.difference_clip  = (src, bg, dest, ext, threashold, eventLogger) => {
     .raw()
     .toBuffer( (err, buffer, info)=> {
         if (err) { image.log.error('optimize error', err); }
+        console.log(info)
+        console.log(`threashold: ${threashold}`)
+
         const bb_info = bbox( buffer, info.width, info.height, threashold)
         console.log(bb_info.x, bb_info.y, bb_info.width, bb_info.height )
         sharp(src).extract({ width: bb_info.width, height: bb_info.height, left: bb_info.x, top: bb_info.y })
@@ -123,6 +126,7 @@ const bbox = (buffer, width, height, threashold)=> {
     let bb_y_index_min = height
     while ( j  < height) {
         while ( i < width ) {
+            // console.log(buffer[ Math.round( y )*width + Math.round( x ) ])
             if ( buffer[ Math.round( y )*width + Math.round( x ) ] > threashold ) {
                 if (bb_x_index_max < i) { bb_x_index_max = i }
                 if (bb_x_index_min > i) { bb_x_index_min = i }
@@ -146,12 +150,13 @@ const bbox = (buffer, width, height, threashold)=> {
         width : bb_x_index_max - bb_x_index_min, 
         height: bb_y_index_max - bb_y_index_min
     }
+    console.log(result_info)
     if( result_info.width < result_info.height ) { 
         // 縦長
         result_info.x = Math.floor( result_info.x - (result_info.height - result_info.width)/2 )
         if (result_info.x < 0) {result_info.x = 0 }
         result_info.width = result_info.height
-    }　else { 
+    } else { 
         //横長
         result_info.y = result_info.y - ( result_info.width - result_info.height )
         if (result_info.y < 0 ) { result_info.y = 0 }

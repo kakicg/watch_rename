@@ -59,6 +59,7 @@ const clip_threashold = env.CLIP_THREASHOULD
 
 //リネームファイルが入るフォルダーの相対パス
 let rename_dir = env.RENAMED_DIR || '//192.168.128.11/g_drive';
+console.log(`rename_dir: ${rename_dir}`)
 if (!fs.existsSync(rename_dir) || test_mode) {
     if(!fs.existsSync(rename_dir)) {
         eventLogger.error(`画像書込み側のネットワーク(${rename_dir})に接続されていません。`);
@@ -152,6 +153,8 @@ const evaluate_and_or_copy = () => {
     
             let p = photo_sizes.indexOf(barcode.size);
             if ( p < 0 ) { p = 0 }
+            console.log(`clip_threashold: ${clip_threashold}`)
+
             env.AUTO_CLIP && image_clipper.difference_clip(src, bg_img, dest, ext, clip_threashold, eventLogger)
             env.AUTO_CLIP || image_clipper.clip_rename(src, dest, ext, clip_ratios[p], eventLogger)
 
@@ -356,6 +359,7 @@ const test_rename_files = (s_dir, d_dir) => {
                 sys.copy_file( `${s_dir}/${file}`, `${d_dir}/${file}` )
             }, 2000*count );
             count++;
+            console.log(count)
         }
     });
 }

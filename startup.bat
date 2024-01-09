@@ -4,7 +4,7 @@ rem
 rem 10秒後にNode.jsのファイルをPowershellで実行する
 rem
 
-pushd "C:\Users\Control\watch_rename"
+pushd "C:\Users\Control\WACH&RENAME\watch_rename"
 
 timeout 10
 

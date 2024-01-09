@@ -5,7 +5,7 @@ const is_windows = process.platform==='win32'
 const is_mac = process.platform==='darwin'
 const is_linux = process.platform==='linux'
 
-require('dotenv').config({ path: '../watch_rename_env' });
+require('dotenv').config({ path: './env' });
 const env = process.env;
 //テストモード
 const test_mode = (process.argv[2] === "test");

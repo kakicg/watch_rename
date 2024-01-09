@@ -8,4 +8,3 @@ test*
 **.log
 event.log
 photo_count.txt
-.env

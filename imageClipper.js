@@ -3,9 +3,13 @@ const fs = require("fs");
 const path = require("path");
 const sys = require("./systemController");
 
-const image_width = 1200;
-const image_quality = 80;
-const cutoff = 1.0;
+require('dotenv').config({ path: './env' });
+const env = process.env;
+
+const image_width = env.IMAGE_WIDTH;
+const image_quality = env.IMAGE_QUALITY;
+const cutoff = env.IMAGE_CUTOFF;
+const aspect_ratio = env.IMAGE_ASPECT_RATIO;
 
 //カットオフ処理
 const cutoff_image = (src, dest, ext, width, height, offset_x, offset_y, eventLogger) => {
@@ -53,9 +57,12 @@ exports.clip_rename = (src, dest, ext, clip_ratio, eventLogger) => {
     let width, height, offset_x, offset_y;
     sharp(src).metadata()
     .then(function(metadata) {
-        width = Math.round(metadata.width*clip_ratio);
         height = Math.round(metadata.height*clip_ratio);
-        // width = height;
+        if (env.IMAGE_IS_SQUARE) {
+            width = height;
+        } else {
+            width = Math.round(metadata.width*clip_ratio);
+        }
 
         offset_x = Math.round( (metadata.width-width)/2 );
         offset_y = metadata.height - height;        

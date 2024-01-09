@@ -1,0 +1,46 @@
+#テストモード
+TESTMODE=false
+#監視フォルダーへのパス
+#WATCH_DIR=//PHOTO-02/Users/Photo/EOS
+#WATCH_DIR=P:/
+WATCH_DIR=../watch
+#リネームファイルのフォルダーへのパス
+#RENAMED_DIR=//192.168.128.11/g_drive
+#RENAMED_DIR=G:
+RENAMED_DIR=../renamed
+#ファイル認識とバーコード認識の許容タイムラグ（単位：ミリ秒)
+TIMELAG=2000
+#オリジナルファイルを残すか否か
+LEAVE_ORIGINAL_FILE=false
+#最終画像サイズ (横幅のピクセル数)
+IMAGE_WIDTH=1200
+#最終画像画質 (0 - 100)
+IMAGE_QUALITY=80
+#最終画像縦横比率
+IMAGE_IS_SQUARE=true
+#クリップサイズ　等級　XL > L > M > S > XS
+XL=X
+L=H
+M=M
+S=L
+XS=P
+#クリップサイズ　各等級のクリップ率
+XL_R=0.7
+L_R=0.6
+M_R=0.45
+S_R=0.33
+XS_R=0.28
+#オリジナル画像の左右カットオフ
+IMAGE_CUTOFF=1.0
+#サンプル採取期間
+SAMPLE_START=2021-03-18
+SAMPLE_END=2021-04-11
+SMTP_SERVER=sv564.xserver.jp
+SMTP_PORT=587
+SMTP_SECURE=false
+MAIL_USER=test@cgkojo.com
+MAIL_PASSWORD=BuHG85am
+MAIL_TO="kakicg@cgkojo.com, kakicg@mac.com"
+MAIL_FROM="kakicg@cgkojo.com"
+AUTO_CLIP=true
+CLIP_THREASHOULD=60

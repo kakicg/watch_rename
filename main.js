@@ -61,6 +61,7 @@ if (!fs.existsSync(rename_dir) || test_mode) {
         eventLogger.error(`画像書込み側のネットワーク(${rename_dir})に接続されていません。`);
     }
     rename_dir = "../renamed";
+    //rename_dir がなければ作成
     sys.check_dir(rename_dir);
 }
 eventLogger.info(`画像書込みフォルダー: ${rename_dir}`);
@@ -74,16 +75,16 @@ console.log(`day.txt[${day_text}]`);
 
 const Storage = require('node-storage');
 const store = new Storage('photo_count.txt');
-let reckoned＿date = store.get('reckoned＿date');　//カウンターの起算日
+let reckoned_ate = store.get('reckoned_ate'); //カウンターの起算日
 const resetPhotoCounter = ()=> {
-    reckoned＿date = new Date();
-    store.put('reckoned＿date', reckoned＿date.toFormat('YYYY/MM/DD'));
+    reckoned_ate = new Date();
+    store.put('reckoned_ate', reckoned_ate.toFormat('YYYY/MM/DD'));
     store.put('photo_count', 0)
 }
-reckoned＿date || resetPhotoCounter()
+reckoned_ate || resetPhotoCounter()
 
 const display_photo_count = () => {
-    console.log(`写真撮影枚数　: ${store.get('photo_count')} (${store.get('reckoned＿date')} 以来)`);
+    console.log(`写真撮影枚数　: ${store.get('photo_count')} (${store.get('reckoned_ate')} 以来)`);
 }
 display_photo_count()
 const image_clipper = require('./imageClipper');

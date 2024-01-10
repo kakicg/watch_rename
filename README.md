@@ -3,7 +3,7 @@
 ## 初期設定手順
 1. Git をインストール参考 https://prog-8.com/docs/git-env-win
 2. Node.jsを https://nodejs.org/ja/ からインストール 「推奨版」と「最新版」の2つのバージョンがあるが「推奨版」の方をインストールする。
-3. Windows PawerShellを起動して「cd watch_rename」でフォルダー内に移動
+3. Windows PwerShellを起動して「watch_rename」でフォルダーを作成して、そのフォルダーへ移動。
 4. Windows PawerShellで「git clone https://github.com/kakicg/watch_rename」を実行。
 5. Windows PawerShellで「node -v」を実行し、node.jsがインストールされていることを確認。
 6. Windows PawerShellで「npm install」を実行。

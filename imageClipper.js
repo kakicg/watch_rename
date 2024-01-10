@@ -6,10 +6,9 @@ const sys = require("./systemController");
 require('dotenv').config({ path: './env' });
 const env = process.env;
 
-const image_width = env.IMAGE_WIDTH;
-const image_quality = env.IMAGE_QUALITY;
-const cutoff = env.IMAGE_CUTOFF;
-const aspect_ratio = env.IMAGE_ASPECT_RATIO;
+const image_width = Number(env.IMAGE_WIDTH);
+const image_quality = Number(env.IMAGE_QUALITY);
+const cutoff = Number(env.IMAGE_CUTOFF);
 
 //カットオフ処理
 const cutoff_image = (src, dest, ext, width, height, offset_x, offset_y, eventLogger) => {

@@ -230,7 +230,7 @@ watcher.on('ready',function(){
     //準備完了
     console.log("フォルダー監視プログラム稼働中。");
     test_mode && eventLogger.trace("[ テストモード ]");
-    test_mode && test_resize_files('../test_images', '../watch')
+    test_mode && test_resize_files('../test_images_A', '../watch')
 
     //ファイル受け取り
     watcher.on( 'add', function(file_name) {

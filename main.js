@@ -39,7 +39,7 @@ async function send_warning( subject, message, count ) {
     }
     console.log(`${subject}: ${message}`);
 }
-send_warning("start", "起動中",1)
+// send_warning("start", "起動中",1)
 
 //監視するフォルダーの相対パス
 let watch_dir = env.WATCH_DIR || 'P:/';
@@ -215,7 +215,7 @@ const evaluate_and_or_copy = () => {
             } else {
                 if (barcode.number.length>0) {
                     const message = `バーコードデータ[ ${barcode.number}(${barcode.date}) ] に対応する写真データが得られませんでした。\n写真シャッターが作動しなかった可能性があります。`
-                    send_warning("写真データなし", message, 15 )
+                    send_warning("写真データなし", message, 1 )
                     eventLogger.warn(message);
                         uncompleted_barcodes.push({bnumber:barcode.number, bdate:barcode.date})
                 }
@@ -246,7 +246,7 @@ watcher.on('ready',function(){
                     if( photo.name < new_name ) {
                         const message = `フォトデータ[ ${photo.name}(${photo.date}) ]\nに対応するバーコード情報が得られませんでした。\n余分な写真データが作られたか、バーコードリーダーが作動しなかった可能性があります。`
                         eventLogger.warn(message);
-                        send_warning("バーコード情報がありません", message, 3)
+                        send_warning("バーコード情報がありません", message, 1)
 
                         sys.remove_file(watch_dir + "/" + photo.name);
                         uncompleted_images.push({pname:photo.name, pdate:photo.date});
@@ -274,7 +274,7 @@ watcher.on('ready',function(){
             if (barcode.name.length>0) {
                 const message = `バーコード[ ${barcode.name}(${barcode.date}) ]\nに対応するフォトデータが得られませんでした。(シャッターが作動しなかった可能性があります。)`
                 eventLogger.warn(message);
-                send_warning("写真データがありません", message, 15)
+                send_warning("写真データがありません", message, 1)
 
                 if (barcode.name.length>0) {
                     uncompleted_barcodes.push({bnumber:barcode.number,bdate:barcode.date});

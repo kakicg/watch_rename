@@ -255,7 +255,6 @@ watcher.on('ready',function(){
                         eventLogger.info(`フォトデータ: ${photo.name} ${photo.date}`);            
                     } else {
                         sys.remove_file( watch_dir + "/" + new_name );
-                        send_warning("バーコード情報がありません", message, 1)
                     }
                 } else {
                     photo.date = new Date();

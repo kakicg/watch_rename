@@ -23,9 +23,9 @@ async function generateDummyImage(barcode_number, dest, ext, eventLogger) {
 
         // 製品番号を描画
         ctx.fillStyle = '#000000';
-        ctx.font = 'bold 48px Arial';
+        ctx.font = 'bold 96px Arial';
         ctx.textAlign = 'center';
-        ctx.fillText(`No.${barcode_number}`, width / 2, height / 2);
+        ctx.fillText(`${barcode_number}`, width / 2, height / 2);
 
         // バッファに変換
         const buffer = canvas.toBuffer('image/png');

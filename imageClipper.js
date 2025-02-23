@@ -10,20 +10,6 @@ const image_width = Number(env.IMAGE_WIDTH);
 const image_quality = Number(env.IMAGE_QUALITY);
 const cutoff = Number(env.IMAGE_CUTOFF);
 
-//カットオフ処理
-const cutoff_image = (src, dest, ext, width, height, offset_x, offset_y, eventLogger) => {
-    sharp(src).extract({ width: width, height: height, left: offset_x, top: offset_y })
-    .resize(image_width, image_width/4*3,{fit: 'contain', background: { r: 255, g: 255, b: 255 }})
-    .jpeg({quality:100}).toFile(`${dest}.${ext}`)
-    .then(function(new_file_info) {
-        eventLogger.info(`カットオフ（${src}　> ${dest}.${ext}`);
-        sys.remove_file(src);
-    })
-    .catch(function(err) {
-        console.log(err);
-    });
-}
-
 //トリミング処理
 const clip_image = (src, dest, ext, width, height, offset_x, offset_y, eventLogger) => {
     let today = new Date();
@@ -71,18 +57,3 @@ exports.clip_rename = (src, dest, ext, clip_ratio, eventLogger) => {
 
     });
 };
-
-//画像CUTOFF処理
-exports.cutoff_move = (src, dest, ext, eventLogger) => {
-    let width, height, offset_x, offset_y;
-    sharp(src).metadata()
-    .then(function(metadata) {
-        width = Math.round(metadata.height*cutoff);
-        height = Math.round(metadata.height);
-
-        offset_x = Math.round( (metadata.width-width)/2 );
-        offset_y = 0;        
-
-        cutoff_image(src, dest, ext, width, height, offset_x, offset_y, eventLogger);
-    });
-}

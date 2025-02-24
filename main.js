@@ -1,15 +1,20 @@
-// 第一引数 "test"の場合テストモード
-// 第二引数 テストモードの場合の許容タイムラグ（単位：ミリ秒)
+// main.js
+const config = require('./config');
 
-const is_windows = process.platform==='win32'
-const is_mac = process.platform==='darwin'
-const is_linux = process.platform==='linux'
+// 以降、configオブジェクトを使用して設定値にアクセスします
+const is_windows = config.isWindows;
+const is_mac = config.isMac;
+const is_linux = config.isLinux;
+// const test_mode = config.testMode;
+const watch_dir = config.watchDir;
+let rename_dir = config.renamedDir;
+const timelag = config.timelag;
+const photo_sizes = config.photoSizes;
+const clip_ratios = config.clipRatios;
 
-require('dotenv').config({ path: './env' });
-const env = process.env;
 //テストモード
-// const test_mode = (process.argv[2] === "test");
-const test_mode = false;
+const test_mode = (process.argv[2] === "test");
+
 //require
 const fs = require("fs");
 const path = require("path");
@@ -40,10 +45,8 @@ async function send_warning( subject, message, count ) {
     }
     console.log(`${subject}: ${message}`);
 }
-// send_warning("start", "起動中",1)
 
 //監視するフォルダーの相対パス
-let watch_dir = env.WATCH_DIR || 'P:/';
 if (!fs.existsSync(watch_dir) ) {
     eventLogger.error(`写真供給側のネットワーク(${watch_dir})に接続されていません。`);
     watch_dir = "../watch";
@@ -55,8 +58,6 @@ sys.check_dir(tmp_image_dir);
 
 eventLogger.info(`写真供給フォルダー: ${watch_dir}`);
 
-//リネームファイルが入るフォルダーの相対パス
-let rename_dir = env.RENAMED_DIR || '//192.168.128.11/g_drive';
 if (!fs.existsSync(rename_dir) || test_mode) {
     if(!fs.existsSync(rename_dir)) {
         eventLogger.error(`画像書込み側のネットワーク(${rename_dir})に接続されていません。`);
@@ -91,16 +92,10 @@ display_photo_count()
 const image_clipper = require('./imageClipper');
 const { getSystemErrorMap } = require('util');
 
-let timelag = process.argv[3] || env.TIMELAG || 2000; //単位「ミリ秒」
-
 eventLogger.info(`許容タイムラグ: ${timelag}ミリ秒`);
 
 let photo = {name:'', date: new Date(0), size:''};
 let barcode = {name:'', date: new Date(0), number: '', lane: '',size:''};
-const photo_sizes = [env.XL||'X', env.L||'H', env.M||'M', env.S||'L', env.XS||'P'];
-const clip_ratios = [env.XL_R || 0.7, env.L_R || 0.6, env.M_R || 0.45, env.S_R || 0.33, env.XS_R || 0.28];
-eventLogger.info(`クリップサイズ等級: ${photo_sizes}`);
-eventLogger.info(`クリップ率: ${clip_ratios}`);
 
 //写真供給フォルダーのクリア
 sys.clear_folder(watch_dir);
@@ -325,8 +320,9 @@ watcher.on('ready',function(){
 
 
 // テストモードの場合、バーコードと画像を送信
-if (process.argv.includes("test")) {
-    console.log("DEBUG: テストモードでバーコードと画像を送信");
+// if (process.argv.includes("test")) {
+if (test_mode) {
+        console.log("DEBUG: テストモードでバーコードと画像を送信");
 
     const fs = require("fs");
     const path = require("path");

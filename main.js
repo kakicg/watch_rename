@@ -8,7 +8,8 @@ const is_linux = process.platform==='linux'
 require('dotenv').config({ path: './env' });
 const env = process.env;
 //テストモード
-const test_mode = (process.argv[2] === "test");
+// const test_mode = (process.argv[2] === "test");
+const test_mode = false;
 //require
 const fs = require("fs");
 const path = require("path");
@@ -135,32 +136,10 @@ const set_barcode_items = (barcode_items) => {
         eventLogger.error('高さセンサー情報がありません\n対応する写真はトリミングされません');
     }
     barcode.number = barcode_items[1].slice(0,5);
+    console.log(`バーコードNO: ${barcode.number}`);
     barcode.lane = barcode.number.slice(0,2);
     barcode.name = day_text + barcode.number;
-    eventLogger.info(`サイズ：${barcode.size}\n バーコード: ${barcode.number}\n${barcode.date}`);
-}
-const test_resize_files = (s_dir, d_dir) => {
-    const files = fs.readdirSync(s_dir);
-    let count = 0;
-    console.log(files)
-    files.forEach(file => {
-        let file_strings = file.split('.');
-        const ext = file_strings[file_strings.length -1];
-        console.log (file_strings)
-        if (ext.toUpperCase() ==="JPG" || ext.toUpperCase() === "JPEG") {
-            setTimeout( ()=>{
-                const new_num =  Math.floor( Math.random() * (199 + 1 - 101) ) + 101 ;
-                barcode.number = `99${new_num}`;
-                barcode.lane = barcode.number.slice(0,2);
-                barcode.name = day_text + barcode.number;
-                barcode.size = file.split('.')[0]
-                barcode.date = new Date();
-                eventLogger.info(`サイズ：${barcode.size}\n バーコード: ${barcode.number}\n${barcode.date}`);
-                copy_file( `${s_dir}/${file}`, `${d_dir}/${file}` )
-            }, 6000*count );
-            count++;
-        }
-    });
+    eventLogger.info(`サイズ：${barcode.size}\n バーコード____: ${barcode.number}\n${barcode.date}`);
 }
 
 const copy_file = (src, d_dir) => {
@@ -230,8 +209,6 @@ watcher.on('ready',function(){
 
     //準備完了
     console.log("フォルダー監視プログラム稼働中。");
-    test_mode && eventLogger.trace("[ テストモード ]");
-    test_mode && test_resize_files('../test_images', '../watch')
 
     //ファイル受け取り
     watcher.on( 'add', function(file_name) {
@@ -344,4 +321,68 @@ watcher.on('ready',function(){
         }
     });
     
-}); //watcher.on('ready',function(){
+});
+
+
+// テストモードの場合、バーコードと画像を送信
+if (process.argv.includes("test")) {
+    console.log("DEBUG: テストモードでバーコードと画像を送信");
+
+    const fs = require("fs");
+    const path = require("path");
+
+    const watch_dir = "../watch";
+    const test_images_dir = "../test_images";
+
+    let firstRun = true;  // 最初の画像の処理を特別扱いする
+
+    // バーコードデータの生成関数
+    const generate_barcode_data = () => {
+        const sizes = ["P", "PL", "PM", "PH", "PX"];
+        const size = sizes[Math.floor(Math.random() * sizes.length)];
+        const lane = "99";
+        const product = String(Math.floor(Math.random() * 900) + 100); // 100〜999のランダムな3桁
+        return `${size}a${lane}${product}`;
+    };
+
+    // 画像をwatchフォルダーにコピーする関数
+    const copy_images_to_watch = async () => {
+        const files = fs.readdirSync(test_images_dir);
+        let count = 0;
+
+        for (const file of files) {
+            if (!file.match(/\.(jpg|jpeg)$/i)) continue; // 画像ファイルのみ処理
+
+            setTimeout(() => {
+                const barcode = generate_barcode_data();
+                console.log(`DEBUG: バーコード送信 - ${barcode}`);
+
+                // `readline.on("line")` の登録を待つため、最初のバーコード送信を遅らせる
+                setTimeout(() => {
+                    console.log(`DEBUG: 実際にバーコードを送信 - ${barcode}`);
+                    readline.emit("line", barcode);
+                }, firstRun ? 3000 : 500); // 初回は 3 秒遅らせる
+
+                // 最初のバーコード送信を遅らせるために、画像のコピーも遅らせる
+                setTimeout(() => {
+                    const src = path.join(test_images_dir, file);
+                    const dest = path.join(watch_dir, file);
+
+                    fs.copyFile(src, dest, (err) => {
+                        if (err) {
+                            console.error(`ファイルコピーエラー: ${err}`);
+                        } else {
+                            console.log(`DEBUG: 画像追加 - ${file}`);
+                        }
+                    });
+                }, firstRun ? 3500 : 500); // 初回は 3.5 秒遅らせる
+
+                firstRun = false; // 以降は通常通り処理
+            }, count * 5000); // 5秒間隔で次の画像をコピー
+            count++;
+        }
+    };
+
+    // テスト開始
+    copy_images_to_watch();
+}

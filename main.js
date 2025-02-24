@@ -1,17 +1,6 @@
 // main.js
 const config = require('./config');
 
-// 以降、configオブジェクトを使用して設定値にアクセスします
-const is_windows = config.isWindows;
-const is_mac = config.isMac;
-const is_linux = config.isLinux;
-// const test_mode = config.testMode;
-const watch_dir = config.watchDir;
-let rename_dir = config.renamedDir;
-const timelag = config.timelag;
-const photo_sizes = config.photoSizes;
-const clip_ratios = config.clipRatios;
-
 //テストモード
 const test_mode = (process.argv[2] === "test");
 
@@ -34,8 +23,8 @@ const eventLogger = log4js.getLogger('event');
 
 const beep = ( interval )=> {
     setTimeout( ()=> {
-        is_mac && require("child_process").exec("afplay /System/Library/Sounds/Blow.aiff");
-        is_windows && require("child_process").exec("powershell.exe [console]::beep(1000,600)");    
+        config.isMac && require("child_process").exec("afplay /System/Library/Sounds/Blow.aiff");
+        config.isWindows && require("child_process").exec("powershell.exe [console]::beep(1000,600)");    
     }, interval*500);
 }
 async function send_warning( subject, message, count ) {
@@ -47,29 +36,29 @@ async function send_warning( subject, message, count ) {
 }
 
 //監視するフォルダーの相対パス
-if (!fs.existsSync(watch_dir) ) {
-    eventLogger.error(`写真供給側のネットワーク(${watch_dir})に接続されていません。`);
-    watch_dir = "../watch";
-    sys.check_dir(watch_dir);
+if (!fs.existsSync(config.watchDir) ) {
+    eventLogger.error(`写真供給側のネットワーク(${config.watchDir})に接続されていません。`);
+    config.watchDir = "../watch";
+    sys.check_dir(config.watchDir);
 }
 //Temp画像フォルダー
 const tmp_image_dir = "../tmp_image"
 sys.check_dir(tmp_image_dir);
 
-eventLogger.info(`写真供給フォルダー: ${watch_dir}`);
+eventLogger.info(`写真供給フォルダー: ${config.watchDir}`);
 
-if (!fs.existsSync(rename_dir) || test_mode) {
-    if(!fs.existsSync(rename_dir)) {
-        eventLogger.error(`画像書込み側のネットワーク(${rename_dir})に接続されていません。`);
+if (!fs.existsSync(config.renamedDir) || test_mode) {
+    if(!fs.existsSync(config.renamedDir)) {
+        eventLogger.error(`画像書込み側のネットワーク(${config.renamedDir})に接続されていません。`);
     }
-    rename_dir = "../renamed";
-    //rename_dir がなければ作成
-    sys.check_dir(rename_dir);
+    config.renamedDir = "../renamed";
+    //config.renamedDir がなければ作成
+    sys.check_dir(config.renamedDir);
 }
-eventLogger.info(`画像書込みフォルダー: ${rename_dir}`);
+eventLogger.info(`画像書込みフォルダー: ${config.renamedDir}`);
 let day_text = "20310101";
-if (fs.existsSync(`${rename_dir}/day.txt`)) {
-    day_text = sys.read_day_text(`${rename_dir}/day.txt`)
+if (fs.existsSync(`${config.renamedDir}/day.txt`)) {
+    day_text = sys.read_day_text(`${config.renamedDir}/day.txt`)
     day_text = day_text.slice(0,8);
 }
 
@@ -92,7 +81,7 @@ display_photo_count()
 const image_clipper = require('./imageClipper');
 const { getSystemErrorMap } = require('util');
 
-eventLogger.info(`許容タイムラグ: ${timelag}ミリ秒`);
+eventLogger.info(`許容タイムラグ: ${config.timelag}ミリ秒`);
 
 const Photo = require('./Photo');
 const Barcode = require('./Barcode');
@@ -105,10 +94,10 @@ const barcode_reset = () => barcode.reset();
 
 
 //写真供給フォルダーのクリア
-sys.clear_folder(watch_dir);
+sys.clear_folder(config.watchDir);
 
 //chokidarの初期化
-const watcher = chokidar.watch(watch_dir+"/",{
+const watcher = chokidar.watch(config.watchDir+"/",{
     ignored:/[\/\\]\./,
     persistent:true
 });
@@ -151,26 +140,26 @@ const evaluate_and_or_copy = () => {
 
     let pdate_bdate = photo.date - barcode.date;
     if ( photo.name.length > 0 && barcode.name.length > 0) {
-        eventLogger.info(`timelag: ${Math.abs(photo.date - barcode.date)}, photo: ${photo.date}, barcode: ${barcode.date}`);
-        if ( Math.abs(pdate_bdate) < timelag || test_mode ) {
-            let src = watch_dir + "/" + photo.name;
+        eventLogger.info(`config.timelag: ${Math.abs(photo.date - barcode.date)}, photo: ${photo.date}, barcode: ${barcode.date}`);
+        if ( Math.abs(pdate_bdate) < config.timelag || test_mode ) {
+            let src = config.watchDir + "/" + photo.name;
             let exts = photo.name.split(".");
             let ext ="";
     
             if(exts.length>1) ext=exts[exts.length-1];
             subdir = day_text + "/" + barcode.lane;
-            let dest = rename_dir
+            let dest = config.renamedDir
             dest = dest + "/" + day_text;
             sys.check_dir(dest);
             dest = dest + "/" + barcode.lane;
             sys.check_dir(dest);
             dest = dest + "/" + barcode.name;
     
-            let p = photo_sizes.indexOf(barcode.size);
+            let p = config.photoSizes.indexOf(barcode.size);
             if ( p < 0 ) { p = 0 }
      
-            image_clipper.clip_rename(src, dest, ext, clip_ratios[p], eventLogger)
-            eventLogger.info(`**** ファイル名:${barcode.name}, クリップサイズ: ${barcode.size}, クリップ率:${clip_ratios[p]}`);
+            image_clipper.clip_rename(src, dest, ext, config.clipRatios[p], eventLogger)
+            eventLogger.info(`**** ファイル名:${barcode.name}, クリップサイズ: ${barcode.size}, クリップ率:${config.clipRatios[p]}`);
 
             photo.reset();
             barcode.reset();
@@ -182,7 +171,7 @@ const evaluate_and_or_copy = () => {
                 }
 
                 photo.reset();
-                sys.clear_folder(watch_dir);
+                sys.clear_folder(config.watchDir);
             } else {
                 if (barcode.number.length>0) {
                     const message = `バーコードデータ[ ${barcode.number}(${barcode.date}) ] に対応する写真データが得られませんでした。\n写真シャッターが作動しなかった可能性があります。`
@@ -217,13 +206,13 @@ watcher.on('ready',function(){
                         eventLogger.warn(message);
                         send_warning("バーコード情報がありません", message, 1)
 
-                        sys.remove_file(watch_dir + "/" + photo.name);
+                        sys.remove_file(config.watchDir + "/" + photo.name);
                         uncompleted_images.push({pname:photo.name, pdate:photo.date});
                         photo.date = new Date();
                         photo.name = new_name;
                         eventLogger.info(`フォトデータ: ${photo.name} ${photo.date}`);            
                     } else {
-                        sys.remove_file( watch_dir + "/" + new_name );
+                        sys.remove_file( config.watchDir + "/" + new_name );
                         send_warning("バーコード情報がありません", message, 1)
                     }
                 } else {
@@ -297,7 +286,7 @@ watcher.on('ready',function(){
                 if (photo.name.length>0) {
                     uncompleted_images.push({pname:photo.name, pdate:photo.date})
                     photo.reset();
-                    sys.clear_folder(watch_dir);
+                    sys.clear_folder(config.watchDir);
                 }
                 if (barcode.name.length>0) {
                     uncompleted_barcodes.push({bnumber:barcode.number, bdate:barcode.date})
@@ -324,7 +313,7 @@ if (test_mode) {
     const fs = require("fs");
     const path = require("path");
 
-    const watch_dir = "../watch";
+    config.watchDir = "../watch";
     const test_images_dir = "../test_images";
 
     let firstRun = true;  // 最初の画像の処理を特別扱いする
@@ -359,7 +348,7 @@ if (test_mode) {
                 // 最初のバーコード送信を遅らせるために、画像のコピーも遅らせる
                 setTimeout(() => {
                     const src = path.join(test_images_dir, file);
-                    const dest = path.join(watch_dir, file);
+                    const dest = path.join(config.watchDir, file);
 
                     fs.copyFile(src, dest, (err) => {
                         if (err) {

@@ -117,6 +117,7 @@ const set_barcode_items = (barcode_items) => {
 
 const evaluate_and_or_copy = require('./evaluate');
 // const create_dest = require('./evaluate');
+const generateDummyImage = require('./generate_dummy_image');
 
 //監視イベント
 watcher.on('ready',function(){
@@ -177,6 +178,7 @@ watcher.on('ready',function(){
                     sys.check_dir(dest);
                     dest = dest + "/" + barcode.name;
                     console.log(`dest(main): ${dest}`);
+                    generateDummyImage(barcode.number, dest, "jpg", eventLogger);
                 }
             }
             set_barcode_items(barcode_items)

@@ -94,8 +94,15 @@ const { getSystemErrorMap } = require('util');
 
 eventLogger.info(`許容タイムラグ: ${timelag}ミリ秒`);
 
-let photo = {name:'', date: new Date(0), size:''};
-let barcode = {name:'', date: new Date(0), number: '', lane: '',size:''};
+const Photo = require('./Photo');
+const Barcode = require('./Barcode');
+
+let photo = new Photo();
+let barcode = new Barcode();
+
+const photo_reset = () => photo.reset();
+const barcode_reset = () => barcode.reset();
+
 
 //写真供給フォルダーのクリア
 sys.clear_folder(watch_dir);
@@ -105,17 +112,7 @@ const watcher = chokidar.watch(watch_dir+"/",{
     ignored:/[\/\\]\./,
     persistent:true
 });
-const photo_reset = () => {
-    photo.name = '';
-    photo.date = new Date(0);
-};
-const barcode_reset = () => {
-    barcode.name = ''; 
-    barcode.lane = '';
-    barcode.number='';
-    barcode.size='';
-    barcode.date = new Date(0);
-};
+
 let uncompleted_images = [];
 let uncompleted_barcodes = [];
 let timer;
@@ -175,8 +172,8 @@ const evaluate_and_or_copy = () => {
             image_clipper.clip_rename(src, dest, ext, clip_ratios[p], eventLogger)
             eventLogger.info(`**** ファイル名:${barcode.name}, クリップサイズ: ${barcode.size}, クリップ率:${clip_ratios[p]}`);
 
-            photo_reset();
-            barcode_reset();
+            photo.reset();
+            barcode.reset();
         } else {
             if (pdate_bdate <0) {
                 if (photo.name.length>0) {
@@ -184,7 +181,7 @@ const evaluate_and_or_copy = () => {
                         uncompleted_images.push({pname:photo.name, pdate:photo.date})
                 }
 
-                photo_reset();
+                photo.reset();
                 sys.clear_folder(watch_dir);
             } else {
                 if (barcode.number.length>0) {
@@ -193,7 +190,7 @@ const evaluate_and_or_copy = () => {
                     eventLogger.warn(message);
                         uncompleted_barcodes.push({bnumber:barcode.number, bdate:barcode.date})
                 }
-                barcode_reset();
+                barcode.reset();
             }
         }
     }
@@ -299,12 +296,12 @@ watcher.on('ready',function(){
             } else if ( cmd === "L") {
                 if (photo.name.length>0) {
                     uncompleted_images.push({pname:photo.name, pdate:photo.date})
-                    photo_reset();
+                    photo.reset();
                     sys.clear_folder(watch_dir);
                 }
                 if (barcode.name.length>0) {
                     uncompleted_barcodes.push({bnumber:barcode.number, bdate:barcode.date})
-                    barcode_reset()
+                    barcode.reset()
                 }
                 console.log("処理されなかった写真\n")
                 console.log(uncompleted_images)

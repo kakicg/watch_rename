@@ -8,7 +8,8 @@ const config = {
     testMode: process.argv.includes("test"),
     watchDir: process.env.WATCH_DIR || 'P:/',
     renamedDir: process.env.RENAMED_DIR || '//192.168.128.11/g_drive',
-    timelag: process.argv[3] || process.env.TIMELAG || 2000, // 単位「ミリ秒」
+    timelag: process.argv[3] || process.env.TIMELAG || 2000,
+    dayText: "20310101",
     photoSizes: [
         process.env.XL || 'X',
         process.env.L || 'H',

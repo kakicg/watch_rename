@@ -1,10 +1,5 @@
 // main.js
 const config = require('./config');
-
-//テストモード
-const test_mode = (process.argv[2] === "test");
-
-//require
 const fs = require("fs");
 const path = require("path");
 const sys = require("./systemController");
@@ -17,7 +12,6 @@ const readline = require('readline').createInterface({
 require('date-utils');
 //ログ記録
 const log4js = require('log4js');
-const { time } = require("console");
 log4js.configure("log-config.json");
 const eventLogger = log4js.getLogger('event');
 
@@ -47,7 +41,7 @@ sys.check_dir(tmp_image_dir);
 
 eventLogger.info(`写真供給フォルダー: ${config.watchDir}`);
 
-if (!fs.existsSync(config.renamedDir) || test_mode) {
+if (!fs.existsSync(config.renamedDir) || config.testMode) {
     if(!fs.existsSync(config.renamedDir)) {
         eventLogger.error(`画像書込み側のネットワーク(${config.renamedDir})に接続されていません。`);
     }
@@ -56,13 +50,12 @@ if (!fs.existsSync(config.renamedDir) || test_mode) {
     sys.check_dir(config.renamedDir);
 }
 eventLogger.info(`画像書込みフォルダー: ${config.renamedDir}`);
-let day_text = "20310101";
 if (fs.existsSync(`${config.renamedDir}/day.txt`)) {
-    day_text = sys.read_day_text(`${config.renamedDir}/day.txt`)
-    day_text = day_text.slice(0,8);
+    config.dayText = sys.read_day_text(`${config.renamedDir}/day.txt`)
+    config.dayText = config.dayText.slice(0,8);
 }
 
-console.log(`day.txt[${day_text}]`);
+console.log(`day.txt[${config.dayText}]`);
 
 const Storage = require('node-storage');
 const store = new Storage('photo_count.txt');
@@ -78,7 +71,6 @@ const display_photo_count = () => {
     console.log(`写真撮影枚数　: ${store.get('photo_count')} (${store.get('reckoned_ate')} 以来)`);
 }
 display_photo_count()
-const image_clipper = require('./imageClipper');
 const { getSystemErrorMap } = require('util');
 
 eventLogger.info(`許容タイムラグ: ${config.timelag}ミリ秒`);
@@ -119,71 +111,11 @@ const set_barcode_items = (barcode_items) => {
     barcode.number = barcode_items[1].slice(0,5);
     console.log(`バーコードNO: ${barcode.number}`);
     barcode.lane = barcode.number.slice(0,2);
-    barcode.name = day_text + barcode.number;
-    eventLogger.info(`サイズ：${barcode.size}\n バーコード____: ${barcode.number}\n${barcode.date}`);
+    barcode.name = config.dayText + barcode.number;
+    eventLogger.info(`サイズ：${barcode.size}\n バーコード: ${barcode.number}\n${barcode.date}`);
 }
 
-const copy_file = (src, d_dir) => {
-    console.log(`${src} -> ${d_dir}`)
-
-    if ( fs.existsSync(src) ) {
-        const current_file_name = path.basename(src);
-
-        fs.copyFile(src, `${d_dir}`, (err) => {
-            if (err) throw err;
-            console.log('ファイルをコピーしました');
-        });
-    }
-}
-
-const evaluate_and_or_copy = () => {
-
-    let pdate_bdate = photo.date - barcode.date;
-    if ( photo.name.length > 0 && barcode.name.length > 0) {
-        eventLogger.info(`config.timelag: ${Math.abs(photo.date - barcode.date)}, photo: ${photo.date}, barcode: ${barcode.date}`);
-        if ( Math.abs(pdate_bdate) < config.timelag || test_mode ) {
-            let src = config.watchDir + "/" + photo.name;
-            let exts = photo.name.split(".");
-            let ext ="";
-    
-            if(exts.length>1) ext=exts[exts.length-1];
-            subdir = day_text + "/" + barcode.lane;
-            let dest = config.renamedDir
-            dest = dest + "/" + day_text;
-            sys.check_dir(dest);
-            dest = dest + "/" + barcode.lane;
-            sys.check_dir(dest);
-            dest = dest + "/" + barcode.name;
-    
-            let p = config.photoSizes.indexOf(barcode.size);
-            if ( p < 0 ) { p = 0 }
-     
-            image_clipper.clip_rename(src, dest, ext, config.clipRatios[p], eventLogger)
-            eventLogger.info(`**** ファイル名:${barcode.name}, クリップサイズ: ${barcode.size}, クリップ率:${config.clipRatios[p]}`);
-
-            photo.reset();
-            barcode.reset();
-        } else {
-            if (pdate_bdate <0) {
-                if (photo.name.length>0) {
-                    eventLogger.warn(`フォトデータ[ ${photo.name}(${photo.date}) ] に対応するバーコード情報が得られませんでした。\n余分な写真データが作られたか、バーコードリーダーが作動しなかった可能性があります。`);
-                        uncompleted_images.push({pname:photo.name, pdate:photo.date})
-                }
-
-                photo.reset();
-                sys.clear_folder(config.watchDir);
-            } else {
-                if (barcode.number.length>0) {
-                    const message = `バーコードデータ[ ${barcode.number}(${barcode.date}) ] に対応する写真データが得られませんでした。\n写真シャッターが作動しなかった可能性があります。`
-                    send_warning("写真データなし", message, 1 )
-                    eventLogger.warn(message);
-                        uncompleted_barcodes.push({bnumber:barcode.number, bdate:barcode.date})
-                }
-                barcode.reset();
-            }
-        }
-    }
-};
+const evaluate_and_or_copy = require('./evaluate');
 
 //監視イベント
 watcher.on('ready',function(){
@@ -222,7 +154,7 @@ watcher.on('ready',function(){
                 }
             } 
         }
-        evaluate_and_or_copy();
+        evaluate_and_or_copy(photo, barcode, config);
    });
 
     //バーコード入力
@@ -241,7 +173,7 @@ watcher.on('ready',function(){
             }
             set_barcode_items(barcode_items)
             
-            evaluate_and_or_copy();
+            evaluate_and_or_copy(photo, barcode, config);
         } else {
             const cmd = barcode_items[0].toUpperCase();
             if ( cmd === "" ) {
@@ -264,10 +196,10 @@ watcher.on('ready',function(){
                 eventLogger.info(uncompleted_images)
                 console.log("処理されなかったバーコードデータ")
                 eventLogger.info(uncompleted_barcodes)
-                test_mode || console.log("5秒後に終了します");
+                config.testMode || console.log("5秒後に終了します");
                 timer = setTimeout( () => {
                     process.exit();
-                }, test_mode ? 0 : 5000 );
+                }, config.testMode ? 0 : 5000 );
 
             } else if ( cmd === "C") {
                 if (timer) {
@@ -307,7 +239,7 @@ watcher.on('ready',function(){
 
 // テストモードの場合、バーコードと画像を送信
 // if (process.argv.includes("test")) {
-if (test_mode) {
+if (config.testMode) {
         console.log("DEBUG: テストモードでバーコードと画像を送信");
 
     const fs = require("fs");

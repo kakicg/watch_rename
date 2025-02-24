@@ -116,6 +116,7 @@ const set_barcode_items = (barcode_items) => {
 }
 
 const evaluate_and_or_copy = require('./evaluate');
+// const create_dest = require('./evaluate');
 
 //監視イベント
 watcher.on('ready',function(){
@@ -169,6 +170,13 @@ watcher.on('ready',function(){
 
                 if (barcode.name.length>0) {
                     uncompleted_barcodes.push({bnumber:barcode.number,bdate:barcode.date});
+                    let dest = config.renamedDir
+                    dest = dest + "/" + config.dayText;
+                    sys.check_dir(dest);
+                    dest = dest + "/" + barcode.lane;
+                    sys.check_dir(dest);
+                    dest = dest + "/" + barcode.name;
+                    console.log(`dest(main): ${dest}`);
                 }
             }
             set_barcode_items(barcode_items)

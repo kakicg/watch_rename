@@ -10,6 +10,7 @@ const create_dest = (config, barcode) => {
     dest = dest + "/" + barcode.lane;
     sys.check_dir(dest);
     dest = dest + "/" + barcode.name;
+    console.log(`dest(ev): ${dest}`);
     return dest;
 }
 const evaluate_and_or_copy = (photo, barcode, config) => {
@@ -22,7 +23,13 @@ const evaluate_and_or_copy = (photo, barcode, config) => {
             let ext ="";
             if(exts.length>1) ext=exts[exts.length-1];
             subdir = config.dayText + "/" + barcode.lane;
-            const dest = create_dest(config, barcode);
+            let dest = config.renamedDir
+            dest = dest + "/" + config.dayText;
+            sys.check_dir(dest);
+            dest = dest + "/" + barcode.lane;
+            sys.check_dir(dest);
+            dest = dest + "/" + barcode.name;
+            console.log(`dest(ev): ${dest}`);
             let p = config.photoSizes.indexOf(barcode.size);
             if ( p < 0 ) { p = 0 }
             image_clipper.clip_rename(src, dest, ext, config.clipRatios[p], eventLogger)

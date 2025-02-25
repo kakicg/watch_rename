@@ -119,7 +119,9 @@ const evaluate_and_or_copy = require('./evaluate');
 // const create_dest = require('./evaluate');
 const generateDummyImage = require('./generate_dummy_image');
 
-
+function create_nobarcode_image() {
+    sys.remove_file(config.watchDir + "/" + photo.name);
+}
 // 画像追加時の処理を有名関数として定義
 function handleNewFile(file_name) {
     const new_name = path.basename(file_name);
@@ -132,28 +134,17 @@ function handleNewFile(file_name) {
             store.put('photo_count', store.get('photo_count') + 1);
             
             if (photo.name.length > 0) {
-                if (photo.name < new_name) {
-                    const message = `フォトデータ [${photo.name} (${photo.date})] に対応するバーコード情報が得られませんでした。\n余分な写真データが作られたか、バーコードリーダーが作動しなかった可能性があります。`;
-                    eventLogger.warn(message);
-                    send_warning("バーコード情報がありません", message, 1);
-
-                    sys.remove_file(config.watchDir + "/" + photo.name);
-                    uncompleted_images.push({ pname: photo.name, pdate: photo.date });
-                    photo.date = new Date();
-                    photo.name = new_name;
-                    eventLogger.info(`フォトデータ: ${photo.name} ${photo.date}`);            
-                } else {
-                    sys.remove_file(config.watchDir + "/" + new_name);
-                    send_warning("バーコード情報がありません", message, 1);
-                }
-            } else {
-                photo.date = new Date();
-                photo.name = new_name;
-                eventLogger.info(`フォトデータ: ${photo.name} ${photo.date}`);            
+                const message = `フォトデータ [${photo.name} (${photo.date})] に対応するバーコード情報が得られませんでした。\n余分な写真データが作られたか、バーコードリーダーが作動しなかった可能性があります。`;
+                eventLogger.warn(message);
+                send_warning("バーコード情報がありません", message, 1);
+                uncompleted_images.push({ pname: photo.name, pdate: photo.date });
+                create_nobarcode_image();
             }
+            photo.date = new Date();
+            photo.name = new_name;
+            eventLogger.info(`フォトデータ: ${photo.name} ${photo.date}`);            
         }
     }
-    
     evaluate_and_or_copy(photo, barcode, config);
 }
 
@@ -202,10 +193,7 @@ function handleBarcodeInput(line) {
             eventLogger.info(uncompleted_images);
             console.log("処理されなかったバーコードデータ");
             eventLogger.info(uncompleted_barcodes);
-            config.testMode || console.log("5秒後に終了します");
-            timer = setTimeout(() => {
-                process.exit();
-            }, config.testMode ? 0 : 5000);
+            process.exit();
         } else if (cmd === "C") {
             if (timer) {
                 new Promise(() => {

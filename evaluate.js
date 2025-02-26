@@ -15,6 +15,10 @@ const create_dest = (config, barcode) => {
 }
 const evaluate_and_or_copy = (photo, barcode, config) => {
     let pdate_bdate = photo.date - barcode.date;
+    console.log(`barcode.name: ${barcode.name}`);
+    console.log(`barcode.number: ${barcode.number}`);
+    console.log(`barcode.date: ${barcode.date}`);
+    console.log(`barcode.size: ${barcode.size}`);
     if ( photo.name.length > 0 && barcode.name.length > 0) {
         eventLogger.info(`config.timelag: ${Math.abs(photo.date - barcode.date)}, photo: ${photo.date}, barcode: ${barcode.date}`);
         if ( Math.abs(pdate_bdate) < config.timelag || config.testMode ) {
@@ -47,9 +51,8 @@ const evaluate_and_or_copy = (photo, barcode, config) => {
             } else {
                 if (barcode.number.length>0) {
                     const message = `バーコードデータ[ ${barcode.number}(${barcode.date}) ] に対応する写真データが得られませんでした。\n写真シャッターが作動しなかった可能性があります。`
-                    send_warning("写真データなし", message, 1 )
                     eventLogger.warn(message);
-                        uncompleted_barcodes.push({bnumber:barcode.number, bdate:barcode.date})
+                    // uncompleted_barcodes.push({bnumber:barcode.number, bdate:barcode.date})
                 }
                 barcode.reset();
             }

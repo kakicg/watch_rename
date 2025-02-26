@@ -120,7 +120,20 @@ const evaluate_and_or_copy = require('./evaluate');
 const generateDummyImage = require('./generate_dummy_image');
 
 function create_nobarcode_image() {
-    sys.remove_file(config.watchDir + "/" + photo.name);
+    const hours = String(photo.date.getHours()).padStart(2, "0");
+    const minutes = String(photo.date.getMinutes()).padStart(2, "0");
+    const seconds = String(photo.date.getSeconds()).padStart(2, "0");
+    const timestamp = `${hours}-${minutes}-${seconds}`;
+
+    let fake_barcode = new Barcode();
+    fake_barcode.date = photo.date;
+    fake_barcode.name = timestamp;
+    fake_barcode.number = 'XXXXX';
+    fake_barcode.lane = 'nobarcode';
+    fake_barcode.size = 'X';
+    console.log(`fake_barcode: ${fake_barcode.name}`);
+    evaluate_and_or_copy(photo, fake_barcode, config);
+    console.log(`evaluate_and_or_copy`);
 }
 // 画像追加時の処理を有名関数として定義
 function handleNewFile(file_name) {
@@ -134,7 +147,7 @@ function handleNewFile(file_name) {
             store.put('photo_count', store.get('photo_count') + 1);
             
             if (photo.name.length > 0) {
-                const message = `フォトデータ [${photo.name} (${photo.date})] に対応するバーコード情報が得られませんでした。\n余分な写真データが作られたか、バーコードリーダーが作動しなかった可能性があります。`;
+                const message = `フォトデータ [${photo.name} (${photo.date})] に対応するバーコード情報が得られませんでした。\nバーコードリーダーが作動しなかった可能性があります。`;
                 eventLogger.warn(message);
                 send_warning("バーコード情報がありません", message, 1);
                 uncompleted_images.push({ pname: photo.name, pdate: photo.date });

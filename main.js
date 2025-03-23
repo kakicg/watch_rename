@@ -168,7 +168,7 @@ function handleNewFile(file_name) {
     evaluate_and_or_copy(photo, barcode, config);
 }
 
-const { updateClipRatio, displayRatios } = require('./ratioManager');
+const { updateClipRatio, displayRatios, resetRatios } = require('./ratioManager');
 
 // バーコード入力時の処理を有名関数として定義
 function handleBarcodeInput(line) {
@@ -213,6 +213,8 @@ function handleBarcodeInput(line) {
         } else if (cmd === "SHOW") {
             displayRatios();
             console.log("show");
+        } else if (cmd === "RESET") {
+            resetRatios();
         }
 
         if (cmd === "") {

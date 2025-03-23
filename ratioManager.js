@@ -2,6 +2,15 @@
 const fs = require("fs");
 const path = "./clipRatios.json";
 
+// デフォルト比率を定義（config.jsと同じ値にしておく）
+const defaultRatios = {
+    XL: parseFloat(process.env.XL_R) || 0.7,
+    L:  parseFloat(process.env.L_R)  || 0.6,
+    M:  parseFloat(process.env.M_R)  || 0.45,
+    S:  parseFloat(process.env.S_R)  || 0.33,
+    XS: parseFloat(process.env.XS_R) || 0.28
+};
+
 function loadRatios() {
     try {
         return JSON.parse(fs.readFileSync(path));
@@ -27,8 +36,14 @@ function displayRatios() {
     console.table(ratios);
 }
 
+function resetRatios() {
+    saveRatios(defaultRatios);
+    console.log("✅ clipRatios を初期値にリセットしました");
+}
+
 module.exports = {
     updateClipRatio,
     displayRatios,
-    loadRatios
+    loadRatios,
+    resetRatios
 };

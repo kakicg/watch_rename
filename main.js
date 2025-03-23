@@ -219,11 +219,14 @@ function handleBarcodeInput(line) {
 
         if (cmd === "") {
             console.log("コマンドリスト\n");
-            console.log("    L: 未処理リスト\n");
-            console.log("    Q: 終了\n");
-            console.log("    C: 終了をキャンセル\n");
-            console.log("    P: 写真撮影累計\n");
-            console.log("    PR: 写真撮影累計リセット\n");
+            console.log("    L     : 未処理リスト表示");
+            console.log("    Q / E : 終了");
+            console.log("    C     : 終了をキャンセル");
+            console.log("    P     : 写真撮影累計表示");
+            console.log("    PR    : 写真撮影累計リセット");
+            console.log("    SHOW  : clipRatios（切り抜き比率）を表示");
+            console.log("    SET   : clipRatios を変更 (例: set XL 0.8)");
+            console.log("    RESET : clipRatios を初期値に戻す");
         } else if (cmd === "Q" || cmd == "E") {
             if (photo.name.length > 0) {
                 uncompleted_images.push({ pname: photo.name, pdate: photo.date });

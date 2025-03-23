@@ -44,7 +44,7 @@ const evaluate_and_or_copy = (photo, barcode, config) => {
             if (pdate_bdate <0) {
                 if (photo.name.length>0) {
                     eventLogger.warn(`フォトデータ[ ${photo.name}(${photo.date}) ] に対応するバーコード情報が得られませんでした。\n余分な写真データが作られたか、バーコードリーダーが作動しなかった可能性があります。`);
-                        uncompleted_images.push({pname:photo.name, pdate:photo.date})
+                    // uncompleted_images.push({pname:photo.name, pdate:photo.date})
                 }
                 photo.reset();
                 sys.clear_folder(config.watchDir);

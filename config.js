@@ -6,8 +6,9 @@ const config = {
     isMac: process.platform === 'darwin',
     isLinux: process.platform === 'linux',
     testMode: process.argv.includes("test"),
-    watchDir: process.env.WATCH_DIR || 'P:/',
-    renamedDir: process.env.RENAMED_DIR || '//192.168.128.11/g_drive',
+    camTestMode: process.argv.includes("cam"),
+    watchDir: process.env.WATCH_DIR,
+    renamedDir: process.env.RENAMED_DIR,
     timelag: process.argv[3] || process.env.TIMELAG || 2000,
     dayText: "20310101",
     photoSizes: [

@@ -131,10 +131,17 @@ function create_nobarcode_image() {
     fake_barcode.number = 'XXXXX';
     fake_barcode.lane = 'nobarcode';
     fake_barcode.size = 'X';
-    console.log(`fake_barcode: ${fake_barcode.name}`);
     evaluate_and_or_copy(photo, fake_barcode, config);
-    console.log(`evaluate_and_or_copy`);
 }
+
+const generate_barcode_data = () => {
+    const sizes = ["P", "PL", "PM", "PH", "PX"];
+    const size = sizes[Math.floor(Math.random() * sizes.length)];
+    const lane = "99";
+    const product = String(Math.floor(Math.random() * 900) + 100); // 100〜999のランダムな3桁
+    return `${size}a${lane}${product}`;
+};
+
 // 画像追加時の処理を有名関数として定義
 function handleNewFile(file_name) {
     const new_name = path.basename(file_name);
@@ -160,6 +167,8 @@ function handleNewFile(file_name) {
     }
     evaluate_and_or_copy(photo, barcode, config);
 }
+
+const { updateClipRatio, displayRatios } = require('./ratioManager');
 
 // バーコード入力時の処理を有名関数として定義
 function handleBarcodeInput(line) {
@@ -187,6 +196,25 @@ function handleBarcodeInput(line) {
         evaluate_and_or_copy(photo, barcode, config);
     } else {
         const cmd = barcode_items[0].toUpperCase();
+        if (cmd.startsWith("SET ")) {
+            const parts = barcode_items[0].split(" ");
+            if (parts.length === 3) {
+                const key = parts[1].toUpperCase();
+                const val = parseFloat(parts[2]);
+                const validKeys = ["XL", "L", "M", "S", "XS"];
+                if (validKeys.includes(key) && !isNaN(val)) {
+                    updateClipRatio(key, val);
+                } else {
+                    console.log("⚠ 無効なキーまたは値です。使用可能キー: XL, L, M, S, XS");
+                }
+            } else {
+                console.log("⚠ SET コマンド形式: set [KEY] [VALUE]  例: set XL 0.8");
+            }
+        } else if (cmd === "SHOW") {
+            displayRatios();
+            console.log("show");
+        }
+
         if (cmd === "") {
             console.log("コマンドリスト\n");
             console.log("    L: 未処理リスト\n");
@@ -285,11 +313,11 @@ if (config.testMode) {
 
             setTimeout(() => {
                 const barcode = generate_barcode_data();
-                console.log(`DEBUG: バーコード送信 - ${barcode}`);
+                // console.log(`DEBUG: バーコード送信 - ${barcode}`);
 
                 // `readline.on("line")` の登録を待つため、最初のバーコード送信を遅らせる
                 setTimeout(() => {
-                    console.log(`DEBUG: 実際にバーコードを送信 - ${barcode}`);
+                    // console.log(`DEBUG: 実際にバーコードを送信 - ${barcode}`);
                     readline.emit("line", barcode);
                 }, firstRun ? 3000 : 500); // 初回は 3 秒遅らせる
 

@@ -135,11 +135,19 @@ function create_nobarcode_image() {
 }
 
 const generate_barcode_data = () => {
-    const sizes = ["P", "PL", "PM", "PH", "PX"];
-    const size = sizes[Math.floor(Math.random() * sizes.length)];
-    const lane = "99";
-    const product = String(Math.floor(Math.random() * 900) + 100); // 100〜999のランダムな3桁
-    return `${size}a${lane}${product}`;
+    if (config.camTestMode >= 1 && config.camTestMode <= 5) {
+        const sizeSymbol = config.photoSizes[5 - config.camTestMode]; // モードと逆順に注意
+        const lane = "XX";
+        const product = String(Math.floor(Math.random() * 900) + 100);
+        return `${sizeSymbol}a${lane}${product}`;
+    } else {
+        // 通常モード（デバッグ用ランダム生成）
+        const sizes = ["P", "PL", "PM", "PH", "PX"];
+        const size = sizes[Math.floor(Math.random() * sizes.length)];
+        const lane = "99";
+        const product = String(Math.floor(Math.random() * 900) + 100);
+        return `${size}a${lane}${product}`;
+    }
 };
 
 // 画像追加時の処理を有名関数として定義
@@ -147,12 +155,12 @@ function handleNewFile(file_name) {
     const new_name = path.basename(file_name);
     let exts = new_name.split(".");
     eventLogger.info(`追加されたファイル: ${new_name}`);            
-    
+
     if (exts.length > 1) {
         let ext = exts[exts.length - 1].toUpperCase();
         if (ext === "JPG" || ext === "JPEG") {
             store.put('photo_count', store.get('photo_count') + 1);
-            
+
             if (photo.name.length > 0) {
                 const message = `フォトデータ [${photo.name} (${photo.date})] に対応するバーコード情報が得られませんでした。\nバーコードリーダーが作動しなかった可能性があります。`;
                 eventLogger.warn(message);
@@ -160,18 +168,69 @@ function handleNewFile(file_name) {
                 uncompleted_images.push({ pname: photo.name, pdate: photo.date });
                 create_nobarcode_image();
             }
+
             photo.date = new Date();
             photo.name = new_name;
             eventLogger.info(`フォトデータ: ${photo.name} ${photo.date}`);            
+
+            // 📸 camTestMode が有効なとき：ダミーバーコードを自動投入
+            if (config.camTestMode > 0) {
+                const dummy_barcode = generate_barcode_data();
+                eventLogger.info(`camTestMode(${config.camTestMode})用ダミーバーコード生成: ${dummy_barcode}`);
+                handleBarcodeInput(dummy_barcode);
+            }
+
+            evaluate_and_or_copy(photo, barcode, config);
         }
     }
-    evaluate_and_or_copy(photo, barcode, config);
 }
 
 const { updateClipRatio, displayRatios, resetRatios } = require('./ratioManager');
 
 // バーコード入力時の処理を有名関数として定義
 function handleBarcodeInput(line) {
+    const raw = line.trim();
+
+    // 🔽 コマンド判定を先に
+    if (/^set /i.test(raw) || /^show$/i.test(raw) || /^reset$/i.test(raw) ) {
+        const parts = raw.split(" ");
+
+        if (parts[0].toLowerCase() === "set") {
+            if (parts.length === 3) {
+                const key = parts[1].toUpperCase();
+                const val = parts[2];
+
+                if (key === "CAM") {
+                    const camVal = parseInt(val);
+                    if (camVal >= 0 && camVal <= 5) {
+                        config.camTestMode = camVal;
+                        const sizeLabels = ["OFF", "XS", "S", "M", "L", "XL"];
+                        console.log(`✅ camTestMode を ${camVal} に設定しました（${sizeLabels[camVal]} サイズモード）`);
+                        eventLogger.info(`camTestMode updated to ${camVal} (${sizeLabels[camVal]})`);
+                    } else {
+                        console.log("⚠ camTestMode は 0〜5 の整数で指定してください");
+                    }
+                } else {
+                    const validKeys = ["XL", "L", "M", "S", "XS"];
+                    if (validKeys.includes(key) && !isNaN(parseFloat(val))) {
+                        updateClipRatio(key, parseFloat(val));
+                    } else {
+                        console.log("⚠ 無効なキーまたは値です。使用可能キー: XL, L, M, S, XS");
+                    }
+                }
+            } else {
+                console.log("⚠ SET コマンド形式: set [KEY] [VALUE]  例: set cam 2, set XS 0.4");
+            }
+            return;
+        } else if (raw.toLowerCase() === "show") {
+            displayRatios();
+            return;
+        } else if (raw.toLowerCase() === "reset") {
+            resetRatios();
+            return;
+        }
+    }
+
     let barcode_items = line.split("a");
     if (barcode_items.length > 1) {
         eventLogger.info(`バーコード: ${line}`);
@@ -196,26 +255,6 @@ function handleBarcodeInput(line) {
         evaluate_and_or_copy(photo, barcode, config);
     } else {
         const cmd = barcode_items[0].toUpperCase();
-        if (cmd.startsWith("SET ")) {
-            const parts = barcode_items[0].split(" ");
-            if (parts.length === 3) {
-                const key = parts[1].toUpperCase();
-                const val = parseFloat(parts[2]);
-                const validKeys = ["XL", "L", "M", "S", "XS"];
-                if (validKeys.includes(key) && !isNaN(val)) {
-                    updateClipRatio(key, val);
-                } else {
-                    console.log("⚠ 無効なキーまたは値です。使用可能キー: XL, L, M, S, XS");
-                }
-            } else {
-                console.log("⚠ SET コマンド形式: set [KEY] [VALUE]  例: set XL 0.8");
-            }
-        } else if (cmd === "SHOW") {
-            displayRatios();
-            console.log("show");
-        } else if (cmd === "RESET") {
-            resetRatios();
-        }
 
         if (cmd === "") {
             console.log("コマンドリスト\n");
@@ -225,7 +264,7 @@ function handleBarcodeInput(line) {
             console.log("    P     : 写真撮影累計表示");
             console.log("    PR    : 写真撮影累計リセット");
             console.log("    SHOW  : clipRatios（切り抜き比率）を表示");
-            console.log("    SET   : clipRatios を変更 (例: set XL 0.8)");
+            console.log("    SET   : clipRatios または camTestMode を設定 (例: set XS 0.4, set cam 3)");
             console.log("    RESET : clipRatios を初期値に戻す");
         } else if (cmd === "Q" || cmd == "E") {
             if (photo.name.length > 0) {

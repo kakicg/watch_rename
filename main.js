@@ -139,7 +139,7 @@ const generate_barcode_data = () => {
         const sizeSymbol = config.photoSizes[5 - config.camTestMode]; // モードと逆順に注意
         const lane = "XX";
         const product = String(Math.floor(Math.random() * 900) + 100);
-        return `${sizeSymbol}a${lane}${product}`;
+        return `${sizeSymbol}a${sizeSymbol}${sizeSymbol}${product}`;
     } else {
         // 通常モード（デバッグ用ランダム生成）
         const sizes = ["P", "PL", "PM", "PH", "PX"];
@@ -312,79 +312,60 @@ function handleBarcodeInput(line) {
     }
 }
 //監視イベント
-watcher.on('ready',function(){
-
-    //準備完了
+//監視イベント
+watcher.on('ready', function() {
     console.log("フォルダー監視プログラム稼働中。");
 
-    //ファイル受け取り
-    watcher.on( 'add', handleNewFile );
-    
-    //バーコード入力
+    // ファイル追加時
+    watcher.on('add', handleNewFile);
+
+    // バーコード入力時
     readline.on('line', handleBarcodeInput);
-});
 
-
-// テストモードの場合、バーコードと画像を送信
-// if (process.argv.includes("test")) {
-if (config.testMode) {
-        console.log("DEBUG: テストモードでバーコードと画像を送信");
-
-    const fs = require("fs");
-    const path = require("path");
-
-    config.watchDir = "../watch";
-    const test_images_dir = "../test_images";
-
-    let firstRun = true;  // 最初の画像の処理を特別扱いする
-
-    // バーコードデータの生成関数
-    const generate_barcode_data = () => {
-        const sizes = ["P", "PL", "PM", "PH", "PX"];
-        const size = sizes[Math.floor(Math.random() * sizes.length)];
-        const lane = "99";
-        const product = String(Math.floor(Math.random() * 900) + 100); // 100〜999のランダムな3桁
-        return `${size}a${lane}${product}`;
-    };
-
-    // 画像をwatchフォルダーにコピーする関数
-    const copy_images_to_watch = async () => {
-        const files = fs.readdirSync(test_images_dir);
-        let count = 0;
-
+    // ✅ テストモード実行はここに移す
+    if (config.testMode) {
+        console.log("DEBUG: テストモード開始");
+    
+        const test_images_dir = "../test_images";
+        config.watchDir = "../watch"; // 念のため
+    
+        const sizeToCamMode = {
+            'X': 5,
+            'H': 4,
+            'M': 3,
+            'L': 2,
+            'P': 1
+        };
+    
+        const files = fs.readdirSync(test_images_dir).filter(file => file.match(/\.(jpg|jpeg)$/i));
+        let count = 1;
+    
         for (const file of files) {
-            if (!file.match(/\.(jpg|jpeg)$/i)) continue; // 画像ファイルのみ処理
-
+            const sizeChar = path.basename(file)[0].toUpperCase(); // 'M.jpg' → 'M'
+            const camMode = sizeToCamMode[sizeChar] || 0;
+    
+            // 拡張子を保ってファイル名を通し番号付きに変更
+            const ext = path.extname(file);
+            const newName = `${sizeChar}${String(count).padStart(3, "0")}${ext}`;
+    
             setTimeout(() => {
-                const barcode = generate_barcode_data();
-                // console.log(`DEBUG: バーコード送信 - ${barcode}`);
-
-                // `readline.on("line")` の登録を待つため、最初のバーコード送信を遅らせる
-                setTimeout(() => {
-                    // console.log(`DEBUG: 実際にバーコードを送信 - ${barcode}`);
-                    readline.emit("line", barcode);
-                }, firstRun ? 3000 : 500); // 初回は 3 秒遅らせる
-
-                // 最初のバーコード送信を遅らせるために、画像のコピーも遅らせる
-                setTimeout(() => {
-                    const src = path.join(test_images_dir, file);
-                    const dest = path.join(config.watchDir, file);
-
-                    fs.copyFile(src, dest, (err) => {
-                        if (err) {
-                            console.error(`ファイルコピーエラー: ${err}`);
-                        } else {
-                            console.log(`DEBUG: 画像追加 - ${file}`);
-                        }
-                    });
-                }, firstRun ? 3500 : 500); // 初回は 3.5 秒遅らせる
-
-                firstRun = false; // 以降は通常通り処理
-            }, count * 5000); // 5秒間隔で次の画像をコピー
+                // camTestMode を変更
+                config.camTestMode = camMode;
+                console.log(`camTestMode を ${camMode} (${sizeChar}) に設定`);
+    
+                const src = path.join(test_images_dir, file);
+                const dest = path.join(config.watchDir, newName);
+    
+                fs.copyFile(src, dest, (err) => {
+                    if (err) {
+                        console.error(`コピー失敗: ${err}`);
+                    } else {
+                        console.log(`画像コピー完了: ${newName}`);
+                    }
+                });
+            }, count * 3000); // 3秒ごとに実行
+    
             count++;
         }
-    };
-
-    // テスト開始
-    copy_images_to_watch();
-}
+    }
+});

@@ -19,6 +19,7 @@ IMAGE_WIDTH=1200
 IMAGE_QUALITY=80
 #最終画像縦横比率
 IMAGE_IS_SQUARE=true
+ASPECT_RATIO=1.0
 #クリップサイズ　等級　XL > L > M > S > XS
 XL=X
 L=H

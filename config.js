@@ -28,7 +28,7 @@ const config = {
         process.env.S_R || 0.33,
         process.env.XS_R || 0.28
     ],
-    aspectRatio: 1.0,
+    aspectRatio: process.env.ASPECT_RATIO || 1.0,
 };
 
 module.exports = config;

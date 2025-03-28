@@ -8,6 +8,7 @@ WATCH_DIR=../watch
 #RENAMED_DIR=//192.168.128.11/g_drive
 #RENAMED_DIR=G:
 RENAMED_DIR=../renamed
+BACKUP_DIR=../backup_images
 #ファイル認識とバーコード認識の許容タイムラグ（単位：ミリ秒)
 TIMELAG=2000
 #オリジナルファイルを残すか否か

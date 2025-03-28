@@ -2,26 +2,20 @@ const sharp = require('sharp');
 const fs = require("fs");
 const path = require("path");
 const sys = require("./systemController");
+const config = require('./config');
 
-require('dotenv').config({ path: './env' });
-const env = process.env;
-
-const image_width = Number(env.IMAGE_WIDTH);
-const image_quality = Number(env.IMAGE_QUALITY);
-const cutoff = Number(env.IMAGE_CUTOFF);
+const image_width = Number(config.imageWidth);
+const image_quality = Number(config.imageQuality);
 
 //トリミング処理
 const clip_image = (src, dest, ext, width, height, offset_x, offset_y, eventLogger) => {
     let today = new Date();
     const original_width = width + offset_x * 2;
     const original_height = height + offset_y;
-    const cutoff_width = original_height;
+    const cutoff_width = original_width;
     const cutoff_height = original_height;
     const cutoff_offset_x = (original_width - original_height)/2;
-
-    console.log(`cutoff_width:${cutoff_width}, cutoff_height:${cutoff_height}, cutoff_offset_x:${cutoff_offset_x}`)
-    console.log(`width:${width}, height:${height}`)
-        
+     
     sharp(src)
     .extract({ width: width, height: height, left: offset_x, top: offset_y }).resize(image_width)
     .normalise().jpeg({quality:image_quality}).toFile(`${dest}.${ext}`)
@@ -31,6 +25,18 @@ const clip_image = (src, dest, ext, width, height, offset_x, offset_y, eventLogg
         let stat = fs.statSync(`${dest}.${ext}`);
         console.log(`ファイルサイズ: ${Math.round(stat.size/1024)}K\n`);
         sys.remove_file(src);
+        
+        const backupFolder = config.backupDir;
+        const backupPath = path.join(backupFolder, `${path.basename(dest)}.${ext}`);
+
+        // フォルダがなければ作成
+        if (!fs.existsSync(backupFolder)) {
+          fs.mkdirSync(backupFolder, { recursive: true });
+        }
+    
+        // 複製保存
+        fs.copyFileSync(`${dest}.${ext}`, backupPath);
+        eventLogger.info(`バックアップ保存（${backupPath}）`);
     })
     .catch(function(err) {
         console.log(err);
@@ -43,7 +49,8 @@ exports.clip_rename = (src, dest, ext, clip_ratio, eventLogger) => {
     sharp(src).metadata()
     .then(function(metadata) {
         height = Math.round(metadata.height*clip_ratio);
-        if (env.IMAGE_IS_SQUARE) {
+        // config.aspectRatio = 1.5
+        if (config.aspectRatio === 1.0) {
             width = height;
         } else {
             width = Math.round(metadata.width*clip_ratio);

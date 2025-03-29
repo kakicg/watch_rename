@@ -37,6 +37,19 @@ exports.clear_folder = (dir) => {
         this.remove_file(dir + "/" + file);
     });
 }
+exports.remove_oldfiles = (dir) => {
+    const files = fs.readdirSync(dir);
+    const now = new Date().getTime();
+    console.log(files)
+
+    files.forEach(file => {
+        const stats = fs.statSync(dir + "/" + file);
+        const mtime = stats.mtime.getTime();
+        if (now - mtime > 1000*60*60*24*7) {
+            this.remove_file(dir + "/" + file);
+        }
+    });
+}
 exports.remove_file = (file) => {
     if ( fs.existsSync(file) ) {
         fs.unlink( file, (err => {

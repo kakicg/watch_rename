@@ -35,9 +35,6 @@ if (!fs.existsSync(config.watchDir) ) {
     config.watchDir = "../watch";
     sys.check_dir(config.watchDir);
 }
-//Temp画像フォルダー
-const tmp_image_dir = "../tmp_image"
-sys.check_dir(tmp_image_dir);
 
 eventLogger.info(`写真供給フォルダー: ${config.watchDir}`);
 
@@ -87,6 +84,9 @@ const barcode_reset = () => barcode.reset();
 
 //写真供給フォルダーのクリア
 sys.clear_folder(config.watchDir);
+
+//バックアップフォルダーの古いファイルを削除
+sys.remove_oldfiles(config.backupDir);
 
 //chokidarの初期化
 const watcher = chokidar.watch(config.watchDir+"/",{

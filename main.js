@@ -196,7 +196,30 @@ function handleBarcodeInput(line) {
         const parts = raw.split(" ");
 
         if (parts[0].toLowerCase() === "set") {
-            if (parts.length === 3) {
+            if (parts.length === 3 && parts[1].toLowerCase() === "sq") {
+                const mode = parts[2]?.toLowerCase();
+                const configPath = path.join(__dirname, 'config.json');
+            
+                if (mode === 'on' || mode === 'off') {
+                    const newAspectRatio = mode === 'on' ? 1.0 : 1.5;
+            
+                    // config.json 読み込み
+                    let json = {};
+                    if (fs.existsSync(configPath)) {
+                        json = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+                    }
+            
+                    json.aspectRatio = newAspectRatio;
+                    fs.writeFileSync(configPath, JSON.stringify(json, null, 2));
+                    config.aspectRatio = newAspectRatio;
+            
+                    console.log(`✅ aspectRatio を ${newAspectRatio} に設定しました（${mode.toUpperCase()} モード）`);
+                    eventLogger.info(`aspectRatio updated to ${newAspectRatio} via set sq ${mode}`);
+                } else {
+                    console.log("⚠ 無効なモードです。使用例: set sq on / set sq off");
+                }
+                return;
+            } else if (parts.length === 3) {
                 const key = parts[1].toUpperCase();
                 const val = parts[2];
 
@@ -218,12 +241,20 @@ function handleBarcodeInput(line) {
                         console.log("⚠ 無効なキーまたは値です。使用可能キー: XL, L, M, S, XS");
                     }
                 }
-            } else {
+            }  else {
                 console.log("⚠ SET コマンド形式: set [KEY] [VALUE]  例: set cam 2, set XS 0.4");
             }
             return;
         } else if (raw.toLowerCase() === "show") {
             displayRatios();
+            // アスペクト比の状態も表示
+            const modeText = config.aspectRatio == 1.0
+            ? "（アスペクト比 1:1）"
+            : config.aspectRatio == 1.5
+                ? "（アスペクト比 3:2）"
+                : `（アスペクト比 ${config.aspectRatio}）`;
+
+            console.log(`📐 現在のアスペクト比: ${config.aspectRatio} ${modeText}`);
             return;
         } else if (raw.toLowerCase() === "reset") {
             resetRatios();
@@ -260,11 +291,11 @@ function handleBarcodeInput(line) {
             console.log("コマンドリスト\n");
             console.log("    L     : 未処理リスト表示");
             console.log("    Q / E : 終了");
-            console.log("    C     : 終了をキャンセル");
             console.log("    P     : 写真撮影累計表示");
             console.log("    PR    : 写真撮影累計リセット");
-            console.log("    SHOW  : clipRatios（切り抜き比率）を表示");
-            console.log("    SET   : clipRatios または camTestMode を設定 (例: set XS 0.4, set cam 3)");
+            console.log("    SHOW  : clipRatios（切り抜き比率）やアスペクト比を表示");
+            console.log("    SET   : clipRatios、camTestMode、アスペクト比を設定");
+            console.log("             例: set XS 0.4, set cam 3, set sq on（1:1）, set sq off（3:2）");
             console.log("    RESET : clipRatios を初期値に戻す");
         } else if (cmd === "Q" || cmd == "E") {
             if (photo.name.length > 0) {

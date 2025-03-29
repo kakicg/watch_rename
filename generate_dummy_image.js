@@ -1,6 +1,8 @@
 const sharp = require('sharp');
 const path = require('path');
 const fs = require('fs');
+const config = require('./config');
+
 
 /**
  * 既存の画像 (/images/noimage.jpg) を背景にして製品番号を印字する (canvas なし)
@@ -37,6 +39,19 @@ async function generateDummyImage(barcode_number, dest, ext, eventLogger) {
             ])
             .toFormat(ext === 'jpg' ? 'jpeg' : 'png', { quality: 80 })
             .toFile(`${dest}.${ext}`);
+
+        const backupFolder = config.backupDir;
+        const backupPath = path.join(backupFolder, `${path.basename(dest)}.${ext}`);
+
+        // フォルダがなければ作成
+        if (!fs.existsSync(backupFolder)) {
+            fs.mkdirSync(backupFolder, { recursive: true });
+        }
+
+        // 複製保存
+        fs.copyFileSync(`${dest}.${ext}`, backupPath);
+        eventLogger.info(`バックアップ保存（${backupPath}）`);
+    
 
         eventLogger.info(`ダミー画像を作成: ${dest}.${ext}`);
     } catch (error) {

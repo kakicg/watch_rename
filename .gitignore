@@ -7,6 +7,7 @@ package-lock.json
 log-config.json
 *.json
 test*
+*test.js
 *.log
 event.log
 photo_count.txt

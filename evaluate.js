@@ -57,23 +57,26 @@ const evaluate_and_or_copy = (photo, barcode, config) => {
 
             photo.reset();
             barcode.reset();
-        } else {
-            if (pdate_bdate <0) {
-                if (photo.name.length>0) {
-                    eventLogger.warn(`フォトデータ[ ${photo.name}(${photo.date}) ] に対応するバーコード情報が得られませんでした。\n余分な写真データが作られたか、バーコードリーダーが作動しなかった可能性があります。`);
-                    // uncompleted_images.push({pname:photo.name, pdate:photo.date})
-                }
-                photo.reset();
-                sys.clear_folder(config.watchDir);
-            } else {
-                if (barcode.number.length>0) {
-                    const message = `バーコードデータ[ ${barcode.number}(${barcode.date}) ] に対応する写真データが得られませんでした。\n写真シャッターが作動しなかった可能性があります。`
-                    eventLogger.warn(message);
-                    // uncompleted_barcodes.push({bnumber:barcode.number, bdate:barcode.date})
-                }
-                barcode.reset();
-            }
-        }
+        } 
+        // else {
+        //     if (pdate_bdate <0) {
+        //         if (photo.name.length>0) {
+        //             eventLogger.warn(`フォトデータ[ ${photo.name}(${photo.date}) ] に対応するバーコード情報が得られませんでした。\n余分な写真データが作られたか、バーコードリーダーが作動しなかった可能性があります。`);
+        //             // uncompleted_images.push({pname:photo.name, pdate:photo.date})
+        //             // ダミーbarcode data作成　＋　XSでクリッピング
+        //         }
+        //         photo.reset();
+        //         sys.clear_folder(config.watchDir);
+        //     } else {
+        //         if (barcode.number.length>0) {
+        //             const message = `バーコードデータ[ ${barcode.number}(${barcode.date}) ] に対応する写真データが得られませんでした。\n写真シャッターが作動しなかった可能性があります。`
+        //             eventLogger.warn(message);
+        //             // uncompleted_barcodes.push({bnumber:barcode.number, bdate:barcode.date})
+        //             // ダミー画像作成
+        //         }
+        //         barcode.reset();
+        //     }
+        // }
     }
 };
 module.exports = evaluate_and_or_copy;
